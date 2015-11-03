@@ -1,3 +1,7 @@
+/* 
+	Conceptual Template Library by Piotr Grudzień
+	A simple array for use with streams.
+*/
 #ifndef _CTL_DATA_HPP_
 #define _CTL_DATA_HPP_
 #include <iostream>
@@ -68,6 +72,13 @@ namespace CTL
 		}
 		
 		Data() {}
+		
+		Data(const CTL::Data<T>& data)
+		: DataPtr(new T[data.Size]), Size(data.Size)
+		{
+			for(int i = 0; i < Size; ++i)
+				this->DataPtr[i]=data.DataPtr[i];
+		}
 		
 		Data(std::istream& stream)
 		{

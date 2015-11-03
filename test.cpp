@@ -5,7 +5,7 @@
 int main()
 {
 	CTL::Data<int> Set(std::cin);
-	CTL::MergeSort(Set.begin(),Set.end(),std::less<int>());
+	CTL::QuickSort(Set.begin(),Set.end(),std::less<int>());
 	Set.Print();
 	std::cout << std::endl;
 }

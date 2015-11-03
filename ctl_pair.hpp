@@ -1,3 +1,8 @@
+/* 
+	Conceptual Template Library by Piotr Grudzień
+	A simple pair implementation.
+*/
+
 #ifndef _CTL_PAIR_HPP_
 #define _CTL_PAIR_HPP_
 
