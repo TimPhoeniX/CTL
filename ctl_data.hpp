@@ -4,8 +4,14 @@
 */
 #ifndef _CTL_DATA_HPP_
 #define _CTL_DATA_HPP_
+
+#include "ctl_sort.hpp"
+
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
+#include <string>
+
 
 namespace CTL
 {
@@ -71,6 +77,27 @@ namespace CTL
 			}
 		}
 		
+		void ReadFile(const char* filename)
+		{
+			std::ifstream file(filename);
+			this->Load(file);
+			file.close();
+		}
+		
+		void ReadFile(const int size, const char* filename)
+		{
+			std::ifstream file(filename);
+			this->Load(size,file);
+			file.close();
+		}
+		
+		void WriteFile(const std::string& filename)
+		{
+			std::ofstream file (filename);
+			this->operator<<(file);
+			file.close();
+		}
+		
 		Data() {}
 		
 		Data(const CTL::Data<T>& data)
@@ -89,6 +116,12 @@ namespace CTL
 		: Size(size), DataPtr(new T[size])
 		{
 			this->ReadStream(stream);
+		}
+		
+		Data(const char* filename)
+		{
+			std::ifstream file(filename);
+			this->Load(file);
 		}
 		
 		T& operator[](const int poz)
@@ -152,6 +185,11 @@ namespace CTL
 			delete[] this->DataPtr;
 		}
 		
+		template<typename Compar>
+		void Sort(void (*sort)(T*,T*,Compar)=CTL::MergeSort,Compar comp=std::less<T>())
+		{
+			sort(this->begin(),this->end(),comp);
+		}
 	};
 	
 }

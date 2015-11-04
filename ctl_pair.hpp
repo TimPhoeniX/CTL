@@ -77,6 +77,15 @@ namespace CTL
 			return *this;
 		}
 		
+		static bool LessFirst(const CTL::Pair<A,B>& a, const CTL::Pair<A,B>& b)
+		{
+			return a.First<b.First;
+		}
+		
+		static bool LessSecond(const CTL::Pair<A,B>& a, const CTL::Pair<A,B>& b)
+		{
+			return a.Second<b.Second;
+		}
 		const A& GetFirst() const 
 		{
 			return this->First;
@@ -87,11 +96,11 @@ namespace CTL
 			return this->Second;
 		}
 		
-		void Swap(CTL::Pair<A,B> pair)
+		void Swap(CTL::Pair<A,B>& pair)
 		{
 			std::swap(this->First,pair.First);
 			std::swap(this->Second,pair.Second);
-		}		
+		}
 	};
 }
 #endif

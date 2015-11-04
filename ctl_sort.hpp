@@ -6,6 +6,9 @@
 #ifndef _CTL_SORT_HPP_
 #define _CTL_SORT_HPP_
 
+#include <utility>
+#include <iterator>
+
 namespace CTL
 {
 	template<typename T, typename Compar>
