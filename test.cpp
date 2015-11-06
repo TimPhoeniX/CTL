@@ -1,6 +1,6 @@
+#include "ctl_sort.hpp"
 #include "ctl_data.hpp"
 #include "ctl_pair.hpp"
-#include "ctl_sort.hpp"
 #include <iostream>
 int main()
 {
