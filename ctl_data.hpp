@@ -57,6 +57,7 @@ namespace CTL
 		
 		void Load(std::istream& stream = std::cin)
 		{
+			if(this->DataPtr==nullptr) this->Clear();
 			stream >> this->Size;
 			this->DataPtr = new T[Size];
 			this->ReadStream(stream);
@@ -64,6 +65,7 @@ namespace CTL
 		
 		void Load(const int size, std::istream& stream = std::cin)
 		{
+			if(this->DataPtr==nullptr) this->Clear();
 			this->Size = size;
 			this->DataPtr = new T[Size];
 			this->ReadStream(stream);
