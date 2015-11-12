@@ -10,5 +10,6 @@
 
 #include "Sort/ctl_merge_sort.hpp"
 #include "Sort/ctl_quick_sort.hpp"
+#include "Sort/ctl_heap_sort.hpp"
 
 #endif

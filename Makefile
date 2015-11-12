@@ -13,7 +13,7 @@ $(Name): $(Sources) $(Headers)
 	$(CC) -o $@ $(Sources) $(CPPFLAGS)
 
 run: $(Name)
-	./$<
+	./$<  < test.txt
 
 clean:
 	rm -rf *~

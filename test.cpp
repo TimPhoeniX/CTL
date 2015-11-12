@@ -5,7 +5,8 @@
 int main()
 {
 	CTL::Data<int> Set(std::cin);
-	CTL::QuickSort(Set.begin(),Set.end(),std::less<int>());
-	Set.Print();
-	std::cout << std::endl;
+	CTL::HeapSort(Set.begin(),Set.end(),std::less<int>());
+	std::cout << Set << std::endl;
+	CTL::HeapSort(Set.begin(),Set.end(),std::greater<int>());
+	std::cout << Set << std::endl;
 }
