@@ -22,25 +22,14 @@ namespace CTL
 			T result = new Type[last-first];
 			T left=first, right=mid, resultIt=result;
 			while(left != mid && right != last)
-// 			{
-// 				
-// 				if(comp(*(right),*(left)))
-// 				{
-// 					(*(resultIt++))=std::move(*(right++));
-// 				}
-// 				else
-// 				{
-// 					(*(resultIt++))=std::move(*(left++));
-// 				}
-// 			}
 			{
-				if(comp(*(left),*(right)) || !comp(*(right),*(left)))
+				if(comp(*(right),*(left)))
 				{
-					(*(resultIt++))=std::move(*(left++));
+					(*(resultIt++))=std::move(*(right++));
 				}
 				else
 				{
-					(*(resultIt++))=std::move(*(right++));
+					(*(resultIt++))=std::move(*(left++));
 				}
 			}
 			while(left != mid)
