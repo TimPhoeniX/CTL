@@ -1,7 +1,7 @@
 /* 
-	Conceptual Template Library by Piotr Grudzień
-	A simple array for use with streams.
-*/
+ * Conceptual Template Library by Piotr Grudzień
+ * A simple array for use with streams.
+ */
 
 #ifndef _CTL_DATA_HPP_
 #define _CTL_DATA_HPP_
