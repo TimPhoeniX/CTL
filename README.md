@@ -1,2 +1,2 @@
 # CTL
-Conceptual template library
+Conceptual Template Library

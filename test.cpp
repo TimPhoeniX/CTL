@@ -1,8 +1,10 @@
 #include "ctl_sort.hpp"
 #include "ctl_data.hpp"
 #include "ctl_pair.hpp"
-#include "ctl_list.hpp"
+#include "ctl_arraylist.hpp"
+#include "ctl_forwardlist.hpp"
 #include <iostream>
+#include <list>
 
 class Tester
 {
@@ -45,16 +47,30 @@ int Tester::count=0;
 
 int main()
 {
-	CTL::ArrayList<Tester> List;
-	for(int i = 0; i<10; ++i)
-	{
-		List.PushBack(Tester());
-	}
+	CTL::ForwardList<int> List;
+	List.PushFront(0);
+	List.PushFront(1);
+	List.PushFront(2);
+	List.PushBack(3);
+	List.Insert(4,4);
+	List.Insert(0,5);
+	List.Insert(3,6);
+	List.Erase(1);
+	std::cout << *List.Find(3) << std::endl;
+	std::cout << List.Get(3) << std::endl;
+	std::cout << List.GetSize() << std::endl;
 	std::cout << List << std::endl;
-	List.Insert(5,List.PopBack());
-	List.Erase(0);
-	std::cout << List << std::endl;
-	std::cout << *(List.Find(List[5])) << std::endl;
+	CTL::ForwardList<Tester> List1;
+	List1.PushFront(Tester());
+	List1.PushFront(Tester());
+	List1.PushFront(Tester());
+	List1.PushBack(Tester());
+	List1.Insert(4,Tester());
+	List1.Insert(0,Tester());
+	List1.Insert(3,Tester());
+	std::cout << List.Get(3) << std::endl;
+	std::cout << List1.GetSize() << std::endl;
+	std::cout << List1 << std::endl;
 	std::cout << Tester::count << std::endl;
 	return 0;
 }

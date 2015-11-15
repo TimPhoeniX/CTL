@@ -1,9 +1,9 @@
 /*  
  * Conceptual Template Library by Piotr Grudzień
- * Implementing list
+ * Simple ArrayList
  */
-#ifndef _CTL_LIST_HPP_
-#define _CTL_LIST_HPP_
+#ifndef _CTL_ARRAYLIST_HPP_
+#define _CTL_ARRAYLIST_HPP_
 
 #include <memory>
 #include <iostream>
@@ -70,6 +70,7 @@ namespace CTL
 		: Head(l.Head), Size(l.Size), MaxSize(l.MaxSize)
 		{
 			l.Head = nullptr;
+			l.Size = 0;
 		}
 		
 		~ArrayList()
@@ -78,9 +79,39 @@ namespace CTL
 			this->Alloc.deallocate(this->Head,this->MaxSize);
 		}
 		
+		Iterator Begin()
+		{
+			return this->Head;
+		}
+		
+		Iterator End()
+		{
+			return this->Head+this->Size;
+		}
+		
+		ConstIterator Begin() const
+		{
+			return this->Head;
+		}
+		
+		ConstIterator End() const
+		{
+			return this->Head+this->Size;
+		}
+		
+		ConstIterator CBegin()
+		{
+			return this->Head;
+		}
+		
+		ConstIterator CEnd()
+		{
+			return this->Head+this->Size;
+		}
+		
 		bool Empty() const
 		{
-			return bool(this->Size);
+			return !bool(this->Size);
 		}
 		
 		SizeType GetSize() const
@@ -107,7 +138,7 @@ namespace CTL
 			if(this->Size < this->MaxSize)
 			{
 				this->MoveBack(0);
-				(*this->Head)=e;
+				(*this->Head)=std::move(e);
 			}
 		}
 		
@@ -123,7 +154,7 @@ namespace CTL
 		{
 			if(this->Size < this->MaxSize)
 			{
-				this->Alloc.construct(this->Head+(Size++),e);
+				this->Alloc.construct(this->Head+(Size++),std::move(e));
 			}
 		}
 		
@@ -172,6 +203,16 @@ namespace CTL
 				this->MoveBack(i);
 				this->Head[i]=std::move(e);
 			}
+		}
+		
+		void Insert(ConstIterator i, const ValueType& e)
+		{
+			this->Insert(i-this->Head,e);
+		}
+		
+		void Insert(ConstIterator i, ValueType&& e)
+		{
+			this->Insert(i-this->Head,std::move(e));
 		}
 		
 		Iterator Find(const ValueType& e)
