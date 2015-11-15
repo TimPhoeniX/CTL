@@ -1,11 +1,11 @@
 /*
  * Conceptual Template Library by Piotr Grudzień
- * Forward list
+ * Double Linked list
  * to be reworked (BaseNode,BaseNode optimal algorithms, Get rid of aligned_storage)
  */
 
-#ifndef _CTL_FORWARDLIST_HPP_
-#define _CTL_FORWARDLIST_HPP_
+#ifndef _CTL_LINKEDLIST_HPP_
+#define _CTL_LINKEDLIST_HPP_
 
 #include<memory>
 #include<iterator>
@@ -14,23 +14,38 @@
 namespace CTL
 {
 	template<typename T>
-	class ForwardListNode
+	class LinkedListNode
 	{
 	public:
 		typedef T ValueType;
 		typedef ValueType* Pointer;
 		typedef const ValueType* ConstPointer;
 		
-		ForwardListNode<T>* Next = nullptr;
-		typename std::aligned_storage<sizeof(T),alignof(T)>::type Data;
+		LinkedListNode<ValueType>* Prev = nullptr;
+		LinkedListNode<ValueType>* Next = nullptr;
+		typename std::aligned_storage<sizeof(ValueType),alignof(ValueType)>::type Data;
 		
-		ForwardListNode()
+		LinkedListNode()
 		{
+		}
+		
+		void Hook(LinkedListNode<T>* pos)
+		{
+			this->Prev = pos->Prev;
+			this->Next = pos;
+			pos->Prev = this;
+			if(this->Prev) this->Prev->Next=this;
+		}
+		
+		void Unhook()
+		{
+			this->Prev->Next = this->Next;
+			if(this->Next) this->Next->Prev = this->Prev;
 		}
 	};
 	
 	template<typename T>
-	class ForwardListIterator
+	class LinkedListIterator
 	{
 	public:
 		typedef T ValueType;
@@ -38,21 +53,21 @@ namespace CTL
 		typedef ValueType& Reference;
 		typedef std::ptrdiff_t DifferenceType;
 		typedef std::forward_iterator_tag IteratorCategory;
-		typedef ForwardListIterator<T> Self;
-		typedef ForwardListNode<T> TypeNode;
+		typedef LinkedListIterator<T> Self;
+		typedef LinkedListNode<T> TypeNode;
 
 		TypeNode* Node = nullptr;
 
-		ForwardListIterator()
+		LinkedListIterator()
 		{
 		}
 		
-		ForwardListIterator(TypeNode* p)
+		LinkedListIterator(TypeNode* p)
 		: Node(p)
 		{
 		}
 		
-		ForwardListIterator(const Self& x)
+		LinkedListIterator(const Self& x)
 		: Node(x.Node)
 		{
 		}
@@ -85,6 +100,19 @@ namespace CTL
 			return tmp;
 		}
 		
+		Self& operator--() noexcept
+		{
+			this->Node=this->Node->Prev;
+			return *this;
+		}
+		
+		Self operator--(int) noexcept
+		{
+			Self tmp(*this);
+			this->Node=this->Node->Prev;
+			return tmp;
+		}
+		
 		bool operator==(const Self& x) const noexcept
 		{
 			return this->Node == x.Node;
@@ -95,17 +123,25 @@ namespace CTL
 			return this->Node != x.Node;
 		}
 		
-		Self Next()
+		Self Next() const
 		{
 			if(this->Node)
 				return Self(this->Node->Next);
 			else
 				return Self(nullptr);
 		}
+		
+		Self Prev() const
+		{
+			if(this->Node)
+				return Self(this->Node->Prev);
+			else
+				return Self(nullptr);
+		}
 	};
 	
 	template<typename T>
-	class ForwardListConstIterator
+	class LinkedListConstIterator
 	{
 	public:
 		typedef T ValueType;
@@ -113,27 +149,27 @@ namespace CTL
 		typedef const ValueType& Reference;
 		typedef std::ptrdiff_t DifferenceType;
 		typedef std::forward_iterator_tag IteratorCategory;
-		typedef ForwardListConstIterator<ValueType> Self;
-		typedef ForwardListNode<ValueType> TypeNode;
-		typedef ForwardListIterator<ValueType> Iterator;
+		typedef LinkedListConstIterator<ValueType> Self;
+		typedef LinkedListNode<ValueType> TypeNode;
+		typedef LinkedListIterator<ValueType> Iterator;
 		
 		TypeNode* Node = nullptr;
 		
-		ForwardListConstIterator()
+		LinkedListConstIterator()
 		{
 		}
 		
-		ForwardListConstIterator(TypeNode* p)
+		LinkedListConstIterator(TypeNode* p)
 		: Node(p)
 		{
 		}
 		
-		ForwardListConstIterator(const Self& x)
+		LinkedListConstIterator(const Self& x)
 		: Node(x.Node)
 		{
 		}
 		
-		ForwardListConstIterator(const Iterator& x)
+		LinkedListConstIterator(const Iterator& x)
 		: Node(x.Node)
 		{
 		}
@@ -166,6 +202,19 @@ namespace CTL
 			return tmp;
 		}
 		
+		Self& operator--() noexcept
+		{
+			this->Node=this->Node->Prev;
+			return *this;
+		}
+		
+		Self operator--(int) noexcept
+		{
+			Self tmp(*this);
+			this->Node=this->Node->Prev;
+			return tmp;
+		}
+		
 		bool operator==(const Self& x) const noexcept
 		{
 			return this->Node == x.Node;
@@ -176,7 +225,15 @@ namespace CTL
 			return this->Node != x.Node;
 		}
 		
-		Self Next()
+		Self Next() const
+		{
+			if(this->Node)
+				return Self(this->Node->Prev);
+			else
+				return Self(nullptr);
+		}
+		
+		Self Prev() const
 		{
 			if(this->Node)
 				return Self(this->Node->Next);
@@ -186,30 +243,30 @@ namespace CTL
 	};
 	
 	template<typename T>
-	inline bool operator==(const ForwardListIterator<T>& a, const ForwardListIterator<T>& b) noexcept
+	inline bool operator==(const LinkedListIterator<T>& a, const LinkedListIterator<T>& b) noexcept
 	{
 		return a.Node==b.Node;
 	}
 	
 	template<typename T>
-	inline bool operator!=(const ForwardListIterator<T>& a, const ForwardListIterator<T>& b) noexcept
+	inline bool operator!=(const LinkedListIterator<T>& a, const LinkedListIterator<T>& b) noexcept
 	{
 		return a.Node!=b.Node;
 	}
 	
 	template<typename T>
-	class ForwardList
+	class LinkedList
 	{
 	public:
 		typedef T ValueType;
 		typedef ValueType& Reference;
 		typedef const ValueType& ConstReference;
 		typedef std::size_t SizeType;
-		typedef ForwardListIterator<ValueType> Iterator;
-		typedef ForwardListIterator<ValueType> ConstIterator;
+		typedef LinkedListIterator<ValueType> Iterator;
+		typedef LinkedListIterator<ValueType> ConstIterator;
 		
 	private:
-		typedef ForwardListNode<ValueType> Node;
+		typedef LinkedListNode<ValueType> Node;
 		typedef typename std::allocator<ValueType>::template rebind<ValueType>::other TypeAllocator;
 		typedef typename std::allocator<ValueType>::template rebind<Node>::other NodeAllocator;
 		
@@ -243,7 +300,7 @@ namespace CTL
 		{
 			auto tmp = pos->Next;
 			if(tmp==this->Tail) this->Tail=pos;
-			pos->Next=tmp->Next;
+			tmp->Unhook();
 			this->TAlloc.destroy((ValueType*)&tmp->Data);
 			tmp->~Node();
 			this->FreeNode(tmp);
@@ -252,18 +309,18 @@ namespace CTL
 		}
 		
 	public:
-		ForwardList()
+		LinkedList()
 		{
 		}
 		
-		ForwardList(ForwardList<ValueType>&& f)
+		LinkedList(LinkedList<ValueType>&& f)
 		: Head(f.Head), Size(f.Size)
 		{
 			f.Head == nullptr;
 			f.Size == 0;
 		}
 		
-		~ForwardList()
+		~LinkedList()
 		{
 			this->Clear();
 		}
@@ -315,6 +372,7 @@ namespace CTL
 			auto tmp = this->Head;
 			if(tmp==this->Tail) this->Tail=nullptr;
 			this->Head=tmp->Next;
+			if(this->Head) this->Head->Prev = nullptr;
 			this->TAlloc.destroy(&tmp->Data);
 			tmp->~Node();
 			this->FreeNode(tmp);
@@ -342,7 +400,8 @@ namespace CTL
 		void PushFront(const ValueType& e)
 		{
 			auto tmp = this->MakeNode(e);
-			tmp->Next = this->Head;
+			tmp->Next=this->Head;
+			if(tmp->Next) tmp->Next->Prev=tmp;
 			this->Head=tmp;
 			++this->Size;
 			if(this->Tail == nullptr) this->Tail = this->Head;
@@ -350,9 +409,10 @@ namespace CTL
 		
 		void PushBack(const ValueType& e)
 		{
-			if(this->Tail==nullptr) return this->PushFront(e);
+			if(this->Tail == nullptr) return this->PushFront(e);
 			auto tmp = this->MakeNode(e);
 			this->Tail->Next=tmp;
+			tmp->Prev=this->Tail;
 			this->Tail=tmp;
 			++Size;
 		}
@@ -378,8 +438,7 @@ namespace CTL
 				auto it = this->Begin();
 				while(--i) ++it;
 				auto tmp = this->MakeNode(e);
-				tmp->Next = it.Node->Next;
-				it.Node->Next = tmp;
+				tmp->Hook(it.Node->Next);
 				++this->Size;
 			}
 		}
@@ -451,7 +510,7 @@ namespace CTL
 			}
 		}
 		
-		friend std::ostream& operator<<(std::ostream& out, const CTL::ForwardList<ValueType>& L)
+		friend std::ostream& operator<<(std::ostream& out, const CTL::LinkedList<ValueType>& L)
 		{
 			L.Print(out);
 			return out;

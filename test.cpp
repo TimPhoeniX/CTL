@@ -3,6 +3,7 @@
 #include "ctl_pair.hpp"
 #include "ctl_arraylist.hpp"
 #include "ctl_forwardlist.hpp"
+#include "ctl_linkedlist.hpp"
 #include <iostream>
 #include <list>
 
@@ -47,7 +48,7 @@ int Tester::count=0;
 
 int main()
 {
-	CTL::ForwardList<int> List;
+	CTL::LinkedList<int> List;
 	List.PushFront(0);
 	List.PushFront(1);
 	List.PushFront(2);
@@ -56,21 +57,27 @@ int main()
 	List.Insert(0,5);
 	List.Insert(3,6);
 	List.Erase(1);
-	std::cout << *List.Find(3) << std::endl;
-	std::cout << List.Get(3) << std::endl;
+	std::cerr << "PostErase" << std::endl;
+//	std::cout << *List.Find(3) << std::endl;
+//	std::cout << List.Get(3) << std::endl;
 	std::cout << List.GetSize() << std::endl;
 	std::cout << List << std::endl;
-	CTL::ForwardList<Tester> List1;
-	List1.PushFront(Tester());
-	List1.PushFront(Tester());
-	List1.PushFront(Tester());
-	List1.PushBack(Tester());
-	List1.Insert(4,Tester());
-	List1.Insert(0,Tester());
-	List1.Insert(3,Tester());
+	std::cout << List.PopBack() << std::endl;
+	std::cout << List.PopFront() << std::endl;
 	std::cout << List.Get(3) << std::endl;
-	std::cout << List1.GetSize() << std::endl;
-	std::cout << List1 << std::endl;
-	std::cout << Tester::count << std::endl;
+	List.Clear();
+	std::cout << List.Empty() << std::endl;
+// 	CTL::ForwardList<Tester> List1;
+// 	List1.PushFront(Tester());
+// 	List1.PushFront(Tester());
+// 	List1.PushFront(Tester());
+// 	List1.PushBack(Tester());
+// 	List1.Insert(4,Tester());
+// 	List1.Insert(0,Tester());
+// 	List1.Insert(3,Tester());
+// 	std::cout << List.Get(3) << std::endl;
+// 	std::cout << List1.GetSize() << std::endl;
+// 	std::cout << List1 << std::endl;
+// 	std::cout << Tester::count << std::endl;
 	return 0;
 }
