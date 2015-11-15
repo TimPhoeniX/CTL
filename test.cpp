@@ -29,6 +29,11 @@ public:
 		return *this;
 	}
 	
+	bool operator==(const Tester& t) const
+	{
+		return this->id==t.id;
+	}
+	
 	friend std::ostream& operator<<(std::ostream& out,const Tester& t)
 	{
 		return out << t.id;
@@ -45,10 +50,11 @@ int main()
 	{
 		List.PushBack(Tester());
 	}
-	List.Print();
-	std::cout << std::endl;
+	std::cout << List << std::endl;
 	List.Insert(5,List.PopBack());
-	List.Print();
-	std::cout << std::endl << Tester::count << std::endl;
+	List.Erase(0);
+	std::cout << List << std::endl;
+	std::cout << *(List.Find(List[5])) << std::endl;
+	std::cout << Tester::count << std::endl;
 	return 0;
 }

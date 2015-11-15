@@ -16,25 +16,25 @@ namespace CTL
 	{
 	public:
 		typedef T ValueType;
+		typedef std::allocator<ValueType> TypeAllocator;		
 		typedef std::size_t SizeType;
 		typedef std::ptrdiff_t DifferenceType;
-		typedef T* Pointer;
-		typedef const T* ConstPointer;
-		typedef T& Reference;
-		typedef const T& ConstReference;
-		typedef T* Iterator;
-		typedef const T* ConstIterator;
-		typedef std::allocator<T> TypeAllocator;
+		typedef typename std::allocator_traits<TypeAllocator>::pointer Pointer;
+		typedef typename std::allocator_traits<TypeAllocator>::const_pointer ConstPointer;
+		typedef ValueType& Reference;
+		typedef const ValueType& ConstReference;
+		typedef ValueType* Iterator;
+		typedef const ValueType* ConstIterator;
+		
 	private:
 		TypeAllocator Alloc = TypeAllocator();
 		Pointer Head = nullptr;
 		SizeType Size = 0 ;
 		SizeType MaxSize = 0;
 		
-		
 		void MoveBack(unsigned int begin)
 		{
-			this->Alloc.construct(this->Head+Size,std::move(this->Head[Size-1]));
+			this->Alloc.construct(this->Head+this->Size,std::move(this->Head[Size-1]));
 			for(unsigned int i = this->Size-1; i > begin; --i)
 			{
 				this->Head[i]=std::move(this->Head[i-1]);
@@ -53,7 +53,6 @@ namespace CTL
 		
 	public:
 		ArrayList(SizeType max = 1024)
-//		: Head(new ValueType[max]), MaxSize(max)
 		: Head(Alloc.allocate(max)), MaxSize(max)
 		{
 		}
@@ -75,8 +74,8 @@ namespace CTL
 		
 		~ArrayList()
 		{
-			std::_Destroy(Head,Head+Size,Alloc);
-			this->Alloc.deallocate(this->Head,MaxSize);
+			std::_Destroy(this->Head,this->Head+this->Size,this->Alloc);
+			this->Alloc.deallocate(this->Head,this->MaxSize);
 		}
 		
 		bool Empty() const
@@ -96,7 +95,7 @@ namespace CTL
 		
 		void PushFront(const ValueType& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->MoveBack(0);
 				*(this->Head)=e;
@@ -105,7 +104,7 @@ namespace CTL
 		
 		void PushFront(ValueType&& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->MoveBack(0);
 				(*this->Head)=e;
@@ -114,7 +113,7 @@ namespace CTL
 		
 		void PushBack(const ValueType& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->Alloc.construct(this->Head+(Size++),e);
 			}
@@ -122,7 +121,7 @@ namespace CTL
 		
 		void PushBack(ValueType&& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->Alloc.construct(this->Head+(Size++),e);
 			}
@@ -131,7 +130,7 @@ namespace CTL
 		//Standarize later;
 		ValueType PopBack()
 		{
-			if(this->Size==0) throw std::out_of_range("PopBack called on empty list");
+			if(this->Size == 0) throw std::out_of_range("PopBack called on empty list");
 			ValueType tmp = std::move(this->Head[Size-1]);
 			this->Alloc.destroy(this->Head+((Size--)-1));
 			return tmp;
@@ -139,7 +138,7 @@ namespace CTL
 		
 		ValueType PopFront()
 		{
-			if(this->Size==0) throw std::out_of_range("PopFront called on empty list");
+			if(this->Size == 0) throw std::out_of_range("PopFront called on empty list");
 			ValueType tmp = std::move(*(this->Head));
 			this->MoveFront(0);
 			return tmp;
@@ -147,19 +146,19 @@ namespace CTL
 		
 		Reference Get(const SizeType i)
 		{
-			if(this->Size<=i) throw std::out_of_range("Get called with i >= Size");
+			if(this->Size <= i) throw std::out_of_range("Get called with i >= Size");
 			return this->Head[i];
 		}
 		
 		ConstReference Get(const SizeType i) const
 		{
-			if(this->Size<=i) throw std::out_of_range("Get called with i >= Size");
+			if(this->Size <= i) throw std::out_of_range("Get called with i >= Size");
 			return this->Head[i];
 		}
 		
 		void Insert(const SizeType i, const ValueType& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->MoveBack(i);
 				this->Head[i]=e;
@@ -168,11 +167,25 @@ namespace CTL
 		
 		void Insert(const SizeType i, ValueType&& e)
 		{
-			if(this->Size<this->MaxSize)
+			if(this->Size < this->MaxSize)
 			{
 				this->MoveBack(i);
 				this->Head[i]=std::move(e);
 			}
+		}
+		
+		Iterator Find(const ValueType& e)
+		{
+			for(SizeType i = 0; i < this->Size; ++i)
+			{
+				if(this->Head[i] == e) return this->Head+i;
+			}
+			return Iterator(nullptr);
+		}
+		
+		void Erase(const SizeType i)
+		{
+			if(i < this->Size) this->MoveFront(i);
 		}
 		
 		void Clear()
@@ -181,12 +194,28 @@ namespace CTL
 			this->Size=0;
 		}
 		
-		void Print(std::ostream& out = std::cout)
+		void Print(std::ostream& out = std::cout) const
 		{
 			for(SizeType i = 0; i < this->Size; ++i)
 			{
 				out << this->Head[i] << ' ';
 			}
+		}
+		
+		Reference operator[](const SizeType i)
+		{
+			return this->Head[i];
+		}
+		
+		ConstReference operator[](const SizeType i) const
+		{
+			return this->Head[i];
+		}
+		
+		friend std::ostream& operator<<(std::ostream& out, const CTL::ArrayList<ValueType>& l)
+		{
+			l.Print(out);
+			return out;
 		}
 	};
 }
