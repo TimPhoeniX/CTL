@@ -40,9 +40,16 @@ namespace CTL
 		typedef std::forward_iterator_tag IteratorCategory;
 		typedef ForwardListIterator<T> Self;
 		typedef ForwardListNode<T> TypeNode;
-
+		
+		// C++ standard reqired typedefs
+		typedef ValueType value_type;
+		typedef Pointer pointer;
+		typedef Reference reference;
+		typedef DifferenceType difference_type;
+		typedef IteratorCategory iterator_category;
+		
 		TypeNode* Node = nullptr;
-
+		
 		ForwardListIterator()
 		{
 		}
@@ -116,6 +123,13 @@ namespace CTL
 		typedef ForwardListConstIterator<ValueType> Self;
 		typedef ForwardListNode<ValueType> TypeNode;
 		typedef ForwardListIterator<ValueType> Iterator;
+		
+		// C++ standard reqired typedefs
+		typedef ValueType value_type;
+		typedef Pointer pointer;
+		typedef Reference reference;
+		typedef DifferenceType difference_type;
+		typedef IteratorCategory iterator_category;
 		
 		TypeNode* Node = nullptr;
 		
@@ -268,12 +282,12 @@ namespace CTL
 			this->Clear();
 		}
 		
-		SizeType GetSize()
+		SizeType GetSize() const
 		{
 			return this->Size;
 		}
 		
-		bool Empty()
+		bool Empty() const
 		{
 			return !bool(this->Size);
 		}

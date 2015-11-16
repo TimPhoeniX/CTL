@@ -55,7 +55,14 @@ namespace CTL
 		typedef std::forward_iterator_tag IteratorCategory;
 		typedef LinkedListIterator<T> Self;
 		typedef LinkedListNode<T> TypeNode;
-
+		
+		// C++ standard reqired typedefs
+		typedef ValueType value_type;
+		typedef Pointer pointer;
+		typedef Reference reference;
+		typedef DifferenceType difference_type;
+		typedef IteratorCategory iterator_category;
+		
 		TypeNode* Node = nullptr;
 
 		LinkedListIterator()
@@ -152,6 +159,13 @@ namespace CTL
 		typedef LinkedListConstIterator<ValueType> Self;
 		typedef LinkedListNode<ValueType> TypeNode;
 		typedef LinkedListIterator<ValueType> Iterator;
+		
+		// C++ standard reqired typedefs
+		typedef ValueType value_type;
+		typedef Pointer pointer;
+		typedef Reference reference;
+		typedef DifferenceType difference_type;
+		typedef IteratorCategory iterator_category;
 		
 		TypeNode* Node = nullptr;
 		
@@ -325,12 +339,12 @@ namespace CTL
 			this->Clear();
 		}
 		
-		SizeType GetSize()
+		SizeType GetSize() const
 		{
 			return this->Size;
 		}
 		
-		bool Empty()
+		bool Empty() const
 		{
 			return !bool(this->Size);
 		}

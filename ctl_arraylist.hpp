@@ -16,7 +16,7 @@ namespace CTL
 	{
 	public:
 		typedef T ValueType;
-		typedef std::allocator<ValueType> TypeAllocator;		
+		typedef std::allocator<ValueType> TypeAllocator;
 		typedef std::size_t SizeType;
 		typedef std::ptrdiff_t DifferenceType;
 		typedef typename std::allocator_traits<TypeAllocator>::pointer Pointer;
@@ -32,19 +32,22 @@ namespace CTL
 		SizeType Size = 0 ;
 		SizeType MaxSize = 0;
 		
-		void MoveBack(unsigned int begin)
+		void MoveBack(SizeType begin)
 		{
-			this->Alloc.construct(this->Head+this->Size,std::move(this->Head[Size-1]));
-			for(unsigned int i = this->Size-1; i > begin; --i)
+			if(this->Size > 0)
 			{
-				this->Head[i]=std::move(this->Head[i-1]);
+				this->Alloc.construct(this->Head+this->Size,std::move(this->Head[Size-1]));
+				for(SizeType i = this->Size-1; i > begin; --i)
+				{
+					this->Head[i]=std::move(this->Head[i-1]);
+				}
 			}
 			++(this->Size);
 		}
 		
-		void MoveFront(unsigned int begin)
+		void MoveFront(SizeType begin)
 		{
-			for(unsigned int i = begin; i < Size-1; ++i)
+			for(SizeType i = begin; i < Size-1; ++i)
 			{
 				this->Head[i]=std::move(this->Head[i+1]);
 			}
