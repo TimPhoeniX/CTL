@@ -224,7 +224,7 @@ namespace CTL
 			{
 				if(this->Head[i] == e) return this->Head+i;
 			}
-			return Iterator(nullptr);
+			return this->End();
 		}
 		
 		void Erase(const SizeType i)
