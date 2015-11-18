@@ -2,8 +2,7 @@ CPPFLAGS= -std=c++11 -Wall -Wextra
 CC = g++
 Name = test.exe
 Sources= test.cpp
-Headers= ctl_linkedlist.hpp ctl_forwardlist.hpp ctl_arraylist.hpp ctl_data.hpp ctl_sort.hpp Sort/ctl_merge_sort.hpp Sort/ctl_quick_sort.hpp ctl_pair.hpp
-files= $(Sources) ctl_data.hpp Makefile dane.txt wyniki_stable.txt  
+Headers= ctl_matrix.hpp  
 
 .PHONY: default run clean tar
 
