@@ -36,9 +36,8 @@ namespace CTL
 		}
 		
 		Matrix( const unsigned int r, const unsigned int c)
-		: Row(r), Col(c), Total(Row*Col), Val(new T[this->Total]{})
+		: Row(r), Col(c), Total(Row*Col), Val(new T[Total]{})
 		{
-			std::cerr << "2intConstr" << std::endl;
 		}
 		
 		Matrix( const Matrix<T>& m )
@@ -70,7 +69,6 @@ namespace CTL
 		
 		Matrix<T>& operator=(Matrix<T>&& m)
 		{
-			std::cerr << "Move=" << std::endl;
 			delete[] this->Val;
 			this->Val=m.Val;
 			m.Val=nullptr;
@@ -84,14 +82,12 @@ namespace CTL
 		{
 			if(this->Row != m.Row || this->Col != m.Col)
 			{
-				std::cerr << "Copy=" << std::endl;
 				this->Row = m.Row;
 				this->Col = m.Col;
 				this->Total = m.Total;
 				delete[] this->Val;
 				this->Val = new T[Total];
 			}
-			std::cerr << "=Copy" << std::endl;
 			auto end = this->Val + this->Total;
 			auto tp = this-Val;
 			auto mp = m.Val;
@@ -104,7 +100,6 @@ namespace CTL
 		
 		~Matrix()
 		{
-			std::cerr << "Deleting" << std::endl;
 			delete[] this->Val;
 		}
 		
@@ -141,9 +136,7 @@ namespace CTL
 		{
 			if(this->Col == m.Row)
 			{
-				std::cerr << "MP" << std::endl;
 				Matrix<T> tmp(this->Row,m.Col);
-				std::cerr << "MP" << std::endl;
 				auto Cell = tmp.Val;
 				for(unsigned int r = 0; r < tmp.Row; ++r)
 				{
@@ -193,7 +186,6 @@ namespace CTL
 			auto ai = this->operator[](i)[c];
 			auto aj = this->operator[](j)[c];
 			//Speeding up a little bit
-			std::cerr << std::sqrt(ai*ai + aj*aj) << std::endl;
 			auto l = 1./std::sqrt(ai*ai + aj*aj);
 			givens[i][i]=( ai*l );
 			givens[j][j]=( ai*l );
@@ -205,8 +197,7 @@ namespace CTL
 		//Tranposes in place;
 		Matrix<T>& InplaceTransposeGivenRotation(const unsigned int i, const unsigned int j)
 		{
-			this->operator[](i)[j] *= -1;
-			this->operator[](j)[i] *= -1;
+			std::swap(this->operator[](i)[j],this->operator[](j)[i]);
 			return *this;
 		}
 		
@@ -215,18 +206,12 @@ namespace CTL
 			int iter = 100;
 			while(iter--)
 			{
-				std::cerr << iter << std::endl;
-				for(unsigned int i = 0; i < this-> Col; ++i)
+				for(unsigned int i = 0; i < this->Col - 1; ++i)
 				{
-					std::cerr << "I1" << std::endl;
 					auto givens = this->GivensRotation(i,i+1,i);
-					std::cerr << "I2" << std::endl;
 					(*this) = givens*(*this); 
-					std::cerr << "I3" << std::endl;
 					givens.InplaceTransposeGivenRotation(i,i+1);
-					std::cerr << "I4" << std::endl;
 					*this = this->operator*(givens);
-					std::cerr << "I5" << std::endl;
 				}
 			}
 		}

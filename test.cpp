@@ -45,7 +45,7 @@ int Tester::count=0;
 
 int main()
 {
-	std::ifstream File("matrices.dat");
+	std::ifstream File("matrices.txt");
 	CTL::Matrix<double> m1(File);
 	CTL::Matrix<double> m2(File);
 	File.close();
