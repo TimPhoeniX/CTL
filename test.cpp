@@ -47,11 +47,11 @@ int main()
 {
 	std::ifstream File("matrices.dat");
 	CTL::Matrix<double> m1(File);
-	CTL::Matrix<double> m5(File);
-	CTL::Matrix<double> m6(File);
+	CTL::Matrix<double> m2(File);
 	File.close();
-	std::cout << m5 << '\n' << m6 << std::endl;
-	auto m8 = m6*m5;
-	std::cout << m8 << std::endl;
+	std::cout << m2 << std::endl;
+	m2.QRAlgorithmSymmetricalTridiagonal();
+	m2.PrintDiagonal();
+	std::cout << '\n' << std::endl;
 	return 0;
 }

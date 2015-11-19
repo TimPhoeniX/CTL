@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
 
 namespace CTL
 {
@@ -21,17 +22,23 @@ namespace CTL
 			auto R = this->operator[](r);
 			for(unsigned int i = 0; i < this->Col; ++i)
 			{
-				//std::cerr << R[i] << ' ' << m[i][c] << '\n';
 				tmp += (R[i] * m[i][c]);
 			}
-			//std::cout << tmp << std::endl;
 			return  tmp;
 		}
 		
 	public:
-		Matrix( const unsigned int row, const unsigned int col)
-		: Row(row), Col(col), Total(Row*Col), Val(new T[this->Total])
+		Matrix( const unsigned int dim)
+		: Row(dim), Col(dim), Total(Row*Col), Val(new T[this->Total]{})
 		{
+			for(unsigned int i = 0; i < dim; ++i)
+				this->operator[](i)[i] = T(1);
+		}
+		
+		Matrix( const unsigned int r, const unsigned int c)
+		: Row(r), Col(c), Total(Row*Col), Val(new T[this->Total]{})
+		{
+			std::cerr << "2intConstr" << std::endl;
 		}
 		
 		Matrix( const Matrix<T>& m )
@@ -61,29 +68,56 @@ namespace CTL
 			}
 		}
 		
-		Matrix<T> operator=(Matrix&& m)
+		Matrix<T>& operator=(Matrix<T>&& m)
 		{
+			std::cerr << "Move=" << std::endl;
 			delete[] this->Val;
 			this->Val=m.Val;
 			m.Val=nullptr;
 			this->Row=m.Row;
 			this->Col=m.Col;
 			this->Total=m.Total;
+			return *this;
+		}
+		
+		Matrix<T>& operator=(const Matrix<T>& m)
+		{
+			if(this->Row != m.Row || this->Col != m.Col)
+			{
+				std::cerr << "Copy=" << std::endl;
+				this->Row = m.Row;
+				this->Col = m.Col;
+				this->Total = m.Total;
+				delete[] this->Val;
+				this->Val = new T[Total];
+			}
+			std::cerr << "=Copy" << std::endl;
+			auto end = this->Val + this->Total;
+			auto tp = this-Val;
+			auto mp = m.Val;
+			while(tp!=end)
+			{
+				*(tp++)=*(mp++);
+			}
+			return *this;
 		}
 		
 		~Matrix()
 		{
+			std::cerr << "Deleting" << std::endl;
 			delete[] this->Val;
 		}
 		
+		
+		
 		T* operator[](unsigned int row)
 		{
-			return this->Val+(row*Row);
+			return this->Val+(row*this->Col);
 		}
 		
 		const T* operator[](unsigned int row) const
 		{
-			return this->Val+(row*Row);
+			return this->Val+(row*this->Col);
 		}
 		
 		Matrix<T> operator+(const Matrix& m) const
@@ -107,13 +141,14 @@ namespace CTL
 		{
 			if(this->Col == m.Row)
 			{
+				std::cerr << "MP" << std::endl;
 				Matrix<T> tmp(this->Row,m.Col);
+				std::cerr << "MP" << std::endl;
 				auto Cell = tmp.Val;
 				for(unsigned int r = 0; r < tmp.Row; ++r)
 				{
 					for(unsigned int c = 0; c < tmp.Col; ++c)
 					{
-						std::cout << r << ' ' << c << std::endl;
 						*(Cell++)=this->SumRC(m,r,c);
 					}
 				}
@@ -127,11 +162,21 @@ namespace CTL
 			auto Cell = this->Val;
 			for(unsigned int r = 0; r < this->Row; ++r)
 			{
+				out.precision(6);
 				for(unsigned int c = 0; c < this->Col; ++c)
 				{
-					out << *(Cell++) << ' ';
+					out << *(Cell++) << '\t';
 				}
 				out << '\n';
+			}
+		}
+		
+		void PrintDiagonal(std::ostream& out = std::cout) const
+		{
+			for(unsigned int i = 0; i < this->Col; ++i)
+			{
+				out.precision(6);
+				out << this->operator[](i)[i] << '\t';
 			}
 		}
 		
@@ -140,6 +185,69 @@ namespace CTL
 			m.Print(out);
 			return out;
 		}
+		
+		
+		Matrix<T> GivensRotation(const unsigned int i, const unsigned int j, const unsigned int c)
+		{
+			Matrix<T> givens(this->Row);
+			auto ai = this->operator[](i)[c];
+			auto aj = this->operator[](j)[c];
+			//Speeding up a little bit
+			std::cerr << std::sqrt(ai*ai + aj*aj) << std::endl;
+			auto l = 1./std::sqrt(ai*ai + aj*aj);
+			givens[i][i]=( ai*l );
+			givens[j][j]=( ai*l );
+			givens[i][j]=( aj*l );
+			givens[j][i]=(-aj*l );
+			return givens;
+		}
+		
+		//Tranposes in place;
+		Matrix<T>& InplaceTransposeGivenRotation(const unsigned int i, const unsigned int j)
+		{
+			this->operator[](i)[j] *= -1;
+			this->operator[](j)[i] *= -1;
+			return *this;
+		}
+		
+		void QRAlgorithmSymmetricalTridiagonal()
+		{
+			int iter = 100;
+			while(iter--)
+			{
+				std::cerr << iter << std::endl;
+				for(unsigned int i = 0; i < this-> Col; ++i)
+				{
+					std::cerr << "I1" << std::endl;
+					auto givens = this->GivensRotation(i,i+1,i);
+					std::cerr << "I2" << std::endl;
+					(*this) = givens*(*this); 
+					std::cerr << "I3" << std::endl;
+					givens.InplaceTransposeGivenRotation(i,i+1);
+					std::cerr << "I4" << std::endl;
+					*this = this->operator*(givens);
+					std::cerr << "I5" << std::endl;
+				}
+			}
+		}
+		
+		//Unsafe
+		void FillWith( const unsigned int rbegin, const unsigned int cbegin, const Matrix<T>& m )
+		{
+			for(unsigned int i = 0; i < m.Row; ++i)
+				for(unsigned int j = 0; j < m.Col; ++j)
+				{
+					this->operator[](rbegin+i)[cbegin+j]=m[i][j];
+				}
+		}
+		
+		CTL::Matrix<T> TridiagonalizingHouseholder(const unsigned int i)
+		{
+			auto dim = this->Col - i - 1;
+			CTL::Matrix<T> householder(dim);
+		}
+		
+		void TridiagonalizeSymmetricHouseHolder();
 	};
 }
 #endif // _CTL_MATRIX_HPP_
