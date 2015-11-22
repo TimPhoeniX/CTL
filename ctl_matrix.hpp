@@ -1,3 +1,7 @@
+/**
+ * Conceptual Template Library by Piotr Grudzień
+ * Numerical Matrix 
+ */
 #ifndef _CTL_MATRIX_HPP_
 #define _CTL_MATRIX_HPP_
 
@@ -28,6 +32,11 @@ namespace CTL
 		}
 		
 	public:
+		constexpr T Epsilon(unsigned int e) const
+		{
+			return e==0 ? 1 : this->Epsilon(e-1)*T(0.1);
+		}
+		
 		Matrix( const unsigned int dim)
 		: Row(dim), Col(dim), Total(Row*Col), Val(new T[this->Total]{})
 		{
@@ -103,8 +112,6 @@ namespace CTL
 			delete[] this->Val;
 		}
 		
-		
-		
 		T* operator[](unsigned int row)
 		{
 			return this->Val+(row*this->Col);
@@ -132,6 +139,53 @@ namespace CTL
 			else throw std::range_error("Adding incompatibile matrices");
 		}
 		
+		Matrix<T> operator-(const Matrix& m) const
+		{
+			if(this->Row == m.Row && this->Col == m.Col)
+			{
+				Matrix<T> tmp(this->Row, this->Col);
+				auto p1 = tmp.Val;
+				auto p2 = this->Val;
+				auto p3 = m.Val;
+				for(unsigned int i = 0; i< tmp.Total; ++i)
+				{
+					*(p1++)=(*(p2++)-*(p3++));
+				}
+				return tmp;
+			}
+			else throw std::range_error("Adding incompatibile matrices");
+		}
+		
+		Matrix<T>& operator+=(const Matrix& m)
+		{
+			if(this->Row == m.Row && this->Col == m.Col)
+			{
+				auto p1 = this->Val;
+				auto p2 = m.Val;
+				for(unsigned int i = 0; i< this->Total; ++i)
+				{
+					*(p1++)+=*(p2++);
+				}
+				return *this;
+			}
+			else throw std::range_error("Adding incompatibile matrices");
+		}
+		
+		Matrix<T>& operator-=(const Matrix& m)
+		{
+			if(this->Row == m.Row && this->Col == m.Col)
+			{
+				auto p1 = this->Val;
+				auto p2 = m.Val;
+				for(unsigned int i = 0; i< this->Total; ++i)
+				{
+					*(p1++)-=*(p2++);
+				}
+				return *this;
+			}
+			else throw std::range_error("Adding incompatibile matrices");
+		}
+		
 		Matrix<T> operator*(const Matrix<T>& m) const
 		{
 			if(this->Col == m.Row)
@@ -148,6 +202,43 @@ namespace CTL
 				return tmp;
 			}
 			else throw std::range_error("Multiplying incompatibile matrices");
+		}
+		
+		explicit operator T() const
+		{
+			return *this->Val;
+		}
+		
+		Matrix<T>& operator*=(T val)
+		{
+			for(unsigned int i = 0; i < this->Total; ++i)
+			{
+				this->Val[i]*=val;
+			}
+			return *this;
+		}
+		
+		Matrix<T>& operator/=(T val)
+		{
+			for(unsigned int i = 0; i < this->Total; ++i)
+			{
+				this->Val[i]/=val;
+			}
+			return *this;
+		}
+		
+		Matrix<T> Transpose() const
+		{
+			Matrix<T> tmp(this->Col,this->Row);
+			auto cell = this->Val;
+			for(unsigned int r = 0; r < this->Row; ++r)
+			{
+				for(unsigned int c = 0; c < this->Col; ++c)
+				{
+					tmp[c][r]=*(cell++);
+				}
+			}
+			return tmp;
 		}
 		
 		void Print(std::ostream& out = std::cout) const
@@ -179,6 +270,15 @@ namespace CTL
 			return out;
 		}
 		
+		void SwapRows(unsigned int a, unsigned int b)
+		{
+			auto ra = this->operator[](a);
+			auto rb = this->operator[](b);
+			for(unsigned int i = 0; i < this->Col; ++i)
+			{
+				std::swap(*(ra++),*(rb++));
+			}
+		}
 		
 		Matrix<T> GivensRotation(const unsigned int i, const unsigned int j, const unsigned int c)
 		{
@@ -195,22 +295,31 @@ namespace CTL
 		}
 		
 		//Tranposes in place;
-		Matrix<T>& InplaceTransposeGivenRotation(const unsigned int i, const unsigned int j)
+		Matrix<T>& InplaceTransposeGivensRotation(const unsigned int i, const unsigned int j)
 		{
 			std::swap(this->operator[](i)[j],this->operator[](j)[i]);
 			return *this;
 		}
 		
+		bool CheckQRConvergnece()
+		{
+			for(unsigned int i = 0; i < this->Col-1; ++i)
+			{
+				if(this->operator[](i+1)[i] > this->Epsilon(50)) return false;
+			}
+			return true;
+		}
+		
 		void QRAlgorithmSymmetricalTridiagonal()
 		{
-			int iter = 100;
-			while(iter--)
+			unsigned int iterationLimit = 5000;
+			while(!this->CheckQRConvergnece() && iterationLimit--)
 			{
 				for(unsigned int i = 0; i < this->Col - 1; ++i)
 				{
 					auto givens = this->GivensRotation(i,i+1,i);
 					(*this) = givens*(*this); 
-					givens.InplaceTransposeGivenRotation(i,i+1);
+					givens.InplaceTransposeGivensRotation(i,i+1);
 					*this = this->operator*(givens);
 				}
 			}
@@ -226,13 +335,152 @@ namespace CTL
 				}
 		}
 		
-		CTL::Matrix<T> TridiagonalizingHouseholder(const unsigned int i)
+		//Unsafe
+		T VectorNorm() const
 		{
-			auto dim = this->Col - i - 1;
-			CTL::Matrix<T> householder(dim);
+			T norm = 0;
+			if(this->Col == 1 || this->Col == 1)
+			{
+				auto cell = this->Val;
+				for( unsigned int i = 0; i < this->Total; ++i)
+				{
+					norm+=( (*cell)*(*cell) );
+					++cell;
+				}
+				norm = sqrt(norm);
+			}
+			return norm;
 		}
 		
-		void TridiagonalizeSymmetricHouseHolder();
+		CTL::Matrix<T> TridiagonalizingHouseholder(const unsigned int c)
+		{
+			CTL::Matrix<T> vec(this->Row-c-1,1);
+			for( unsigned int i = 0; i < vec.Row; ++i)
+			{
+				vec[i][0]=this->operator[](i+c+1)[c];
+			}
+			vec[0][0]-=(std::signbit(vec[0][0])?(-1):(1))*vec.VectorNorm();
+			auto vet = vec.Transpose();
+			Matrix<T> subm(vec.Row);
+			auto norm = 2/T(vet*vec);
+			subm-=( (vec*vet)*=norm);
+			CTL::Matrix<T> householder(this->Col);
+			householder.FillWith(c+1,c+1,subm);
+			return householder;
+		}
+		
+		void TridiagonalizeSymmetricHouseholder()
+		{
+			const unsigned int count = this->Row-2;
+			for(unsigned int i = 0; i < count; ++i)
+			{
+				auto h = this->TridiagonalizingHouseholder(i);
+				*this = h*(*this)*h;
+			}
+		}
+		
+		Matrix<T>& InplacePermutateRows(unsigned int* permutation)
+		{
+			Matrix<T> pMatrix(this->Row,this->Col);
+			for(unsigned int i = 0; i < this->Row; ++i)
+			{
+				pMatrix[i][permutation[i]]=1;
+			}
+			this->operator=(pMatrix*(*this));
+			return *this;
+		}
+		
+		Matrix<T>& InplacePermutateCols(unsigned int* permutation)
+		{
+			Matrix<T> pMatrix(this->Row,this->Col);
+			for(unsigned int i = 0; i < this->Row; ++i)
+			{
+				pMatrix[i][permutation[i]]=1;
+			}
+			this->operator=(this->operator*(pMatrix));//*(*this));
+			return *this;
+		}
+		
+		//If permutation is insufficient in size errors may occur;
+		void InplaceLU(unsigned int* permutation = nullptr)
+		{
+			if(permutation)
+			{
+				for(unsigned int i = 0; i < this->Row;++i)
+				{
+					permutation[i]=i;
+				}
+			}
+			for(unsigned int c = 0; c < this->Col; ++c)
+			{
+				//Above Diagonal Elements;
+				for(unsigned int r = 0; r < c; ++r)
+				{
+					for(unsigned int i = 0; i < r; ++i)
+					{
+						this->operator[](r)[c]-=this->operator[](r)[i]*this->operator[](i)[c];
+					}
+				}
+				//PrePivot
+				for(unsigned int r = c; r < this->Row; ++r)
+				{
+					for(unsigned int i = 0; i < c; ++i)
+					{
+						this->operator[](r)[c]-=this->operator[](r)[i]*this->operator[](i)[c];
+					}
+					if(c==1) std::cout << this->operator[](r)[c] << std::endl;
+				}
+				//Pivot
+				unsigned int row = c;
+				auto basic = T(0);
+				for(unsigned int r = c; r < this->Row; ++r)
+				{
+					auto candidate = abs(this->operator[](r)[c]);
+//					std::cout << basic << ' ' << candidate << std::endl;
+					if(candidate > basic)
+					{
+						row = r;
+						basic = candidate;
+					}
+				}
+				if(row!=c)
+				{
+					if(permutation) std::swap(permutation[c],permutation[row]);
+					this->SwapRows(row,c);
+				}
+				//PostPivot
+				if(basic != T(0))
+				{
+					basic = this->operator[](c)[c];
+					for(unsigned int r = c+1; r < this->Row; ++r)
+					{
+						this->operator[](r)[c]/=basic;
+					}
+				}
+			}
+		}
+		
+		Matrix<T> ReassembleFromLU()
+		{
+			Matrix<T> L(this->Col);
+			Matrix<T> U(this->Row,this->Col);
+			for(unsigned int r = 1; r < this->Row; ++r)
+			{
+				for(unsigned int c = 0; c < r; ++c)
+				{
+					L[r][c]=this->operator[](r)[c];
+				}
+			}
+			for(unsigned int r = 0; r < this->Row; ++r)
+			{
+				for(unsigned int c = r; c < this->Col; ++c)
+				{
+					U[r][c]=this->operator[](r)[c];
+				}
+			}
+			std::cout << L << '\n' << U << std::endl;
+			return L*U;
+		}
 	};
 }
 #endif // _CTL_MATRIX_HPP_
