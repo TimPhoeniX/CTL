@@ -6,21 +6,22 @@
 
 int main()
 {
-// 	std::ifstream file("matrices.txt");
-// 	CTL::Matrix<double> m(file);
-// 	file.close();
-// 	unsigned int* P = new unsigned int[4]{};
-// 	m.InplaceLU(P);
-// 	std::cout << m << std::endl;
-// 	auto m2 = m.ReassembleFromLU();
-// 	std::cout << m2 << std::endl;
-// 	std::cout << m2.InplacePermutateRows(P) << std::endl;
-	CTL::Stack<int> s;
-	s.Push(1);
-	s.Push(2);
-	auto s1 = CTL::Stack<int>(std::move(s));
-	std::cout << s1.GetSize() << std::endl;
-	while(!s1.Empty())
-		std::cout << s1.Pop() << std::endl;
+	std::ifstream file("matrices.txt");
+	CTL::Matrix<double> m(file);
+	file.close();
+	unsigned int* P = new unsigned int[5]{};
+	m.InplaceLU(P);
+	for(int i = 0; i<5; ++i)
+	{
+		std::cout << i << ' ' << P[i] << std::endl;
+	}
+	std::cout << m << std::endl;
+	auto m2 = m.ReassembleFromLU();
+	std::cout << m2 << std::endl;
+	std::cout << m2.InplacePermutateRows(P) << std::endl;
+	unsigned int* P1 = new unsigned int[5] {4,3,0,1,2};
+	std::cout << m2.InplacePermutateCols(P1) << std::endl;
+	unsigned int* P2 = new unsigned int[5] {2,3,4,1,0};
+	std::cout << m2.InplacePermutateCols(P2) << std::endl;
 	return 0;
 }

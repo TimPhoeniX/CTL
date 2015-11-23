@@ -305,14 +305,14 @@ namespace CTL
 		{
 			for(unsigned int i = 0; i < this->Col-1; ++i)
 			{
-				if(this->operator[](i+1)[i] > this->Epsilon(50)) return false;
+				if(this->operator[](i+1)[i] > this->Epsilon(15)) return false;
 			}
 			return true;
 		}
 		
 		void QRAlgorithmSymmetricalTridiagonal()
 		{
-			unsigned int iterationLimit = 5000;
+			unsigned int iterationLimit = 6400;
 			while(!this->CheckQRConvergnece() && iterationLimit--)
 			{
 				for(unsigned int i = 0; i < this->Col - 1; ++i)
@@ -384,7 +384,7 @@ namespace CTL
 			Matrix<T> pMatrix(this->Row,this->Col);
 			for(unsigned int i = 0; i < this->Row; ++i)
 			{
-				pMatrix[i][permutation[i]]=1;
+				pMatrix[permutation[i]][i]=1;
 			}
 			this->operator=(pMatrix*(*this));
 			return *this;
@@ -395,7 +395,7 @@ namespace CTL
 			Matrix<T> pMatrix(this->Row,this->Col);
 			for(unsigned int i = 0; i < this->Row; ++i)
 			{
-				pMatrix[i][permutation[i]]=1;
+				pMatrix[permutation[i]][i]=1;
 			}
 			this->operator=(this->operator*(pMatrix));//*(*this));
 			return *this;
