@@ -2,7 +2,7 @@ CPPFLAGS= -std=c++11 -Wall -Wextra
 CC = g++
 Name = test.exe
 Sources= test.cpp
-Headers= ctl_matrix.hpp  
+Headers= ctl_matrix.hpp ctl_stack.hpp
 
 .PHONY: default run clean tar
 
