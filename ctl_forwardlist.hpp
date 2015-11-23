@@ -271,10 +271,11 @@ namespace CTL
 		}
 		
 		ForwardList(ForwardList<ValueType>&& f)
-		: Head(f.Head), Size(f.Size)
+		: Head(f.Head), Tail(f.Tail), Size(f.Size)
 		{
-			f.Head == nullptr;
-			f.Size == 0;
+			f.Head = nullptr;
+			f.Tail = nullptr;
+			f.Size = 0;
 		}
 		
 		~ForwardList()
