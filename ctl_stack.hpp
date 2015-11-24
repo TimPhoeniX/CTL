@@ -57,6 +57,11 @@ namespace CTL
 		{
 			return Store.PopFront();
 		}
+		
+		Reference Top()
+		{
+			return Store.Front();
+		}
 	};
 }
 

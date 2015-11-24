@@ -293,6 +293,12 @@ namespace CTL
 			return !bool(this->Size);
 		}
 		
+		Reference Front()
+		{
+			if(this->Size == 0) throw std::out_of_range("Front called on empty list");
+			return *reinterpret_cast<ValueType*>(&this->Head->Data);
+		}
+		
 		Iterator Begin()
 		{
 			return Iterator(Head);

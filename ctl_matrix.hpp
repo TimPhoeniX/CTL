@@ -384,6 +384,17 @@ namespace CTL
 			Matrix<T> pMatrix(this->Row,this->Col);
 			for(unsigned int i = 0; i < this->Row; ++i)
 			{
+				pMatrix[i][permutation[i]]=1;
+			}
+			this->operator=(pMatrix*(*this));
+			return *this;
+		}
+		
+		Matrix<T>& InplaceReversePermutateRows(unsigned int* permutation)
+		{
+			Matrix<T> pMatrix(this->Row,this->Col);
+			for(unsigned int i = 0; i < this->Row; ++i)
+			{
 				pMatrix[permutation[i]][i]=1;
 			}
 			this->operator=(pMatrix*(*this));
