@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 
 namespace CTL
@@ -244,9 +245,9 @@ namespace CTL
 		void Print(std::ostream& out = std::cout) const
 		{
 			auto Cell = this->Val;
+			out << std::setprecision(3) << std::fixed;
 			for(unsigned int r = 0; r < this->Row; ++r)
 			{
-				out.precision(6);
 				for(unsigned int c = 0; c < this->Col; ++c)
 				{
 					out << *(Cell++) << '\t';
@@ -333,6 +334,15 @@ namespace CTL
 				{
 					this->operator[](rbegin+i)[cbegin+j]=m[i][j];
 				}
+		}
+		
+		void FillWith( std::istream& in = std::cin )
+		{
+			auto ptr = this->Val;
+			for(unsigned int i = 0; i < this->Total; ++i)
+			{
+				in >> *(ptr++);
+			}
 		}
 		
 		//Unsafe
@@ -439,7 +449,6 @@ namespace CTL
 					{
 						this->operator[](r)[c]-=this->operator[](r)[i]*this->operator[](i)[c];
 					}
-					if(c==1) std::cout << this->operator[](r)[c] << std::endl;
 				}
 				//Pivot
 				unsigned int row = c;
@@ -489,7 +498,7 @@ namespace CTL
 					U[r][c]=this->operator[](r)[c];
 				}
 			}
-			std::cout << L << '\n' << U << std::endl;
+			std::cout << "L:\n" <<  L << "\nU:\n" << U << std::endl;
 			return L*U;
 		}
 	};
