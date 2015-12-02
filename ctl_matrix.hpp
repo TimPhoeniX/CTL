@@ -99,7 +99,7 @@ namespace CTL
 				this->Val = new T[Total];
 			}
 			auto end = this->Val + this->Total;
-			auto tp = this-Val;
+			auto tp = this->Val;
 			auto mp = m.Val;
 			while(tp!=end)
 			{

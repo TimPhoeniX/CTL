@@ -10,6 +10,7 @@
 #include<memory>
 #include<iterator>
 #include<iostream>
+#include<stdexcept>
 
 namespace CTL
 {
