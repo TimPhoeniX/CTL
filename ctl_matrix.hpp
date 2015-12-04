@@ -245,7 +245,7 @@ namespace CTL
 		void Print(std::ostream& out = std::cout) const
 		{
 			auto Cell = this->Val;
-			out << std::setprecision(3) << std::fixed;
+			out << std::setprecision(6) << std::fixed;
 			for(unsigned int r = 0; r < this->Row; ++r)
 			{
 				for(unsigned int c = 0; c < this->Col; ++c)
@@ -281,7 +281,7 @@ namespace CTL
 			}
 		}
 		
-		Matrix<T> GivensRotation(const unsigned int i, const unsigned int j, const unsigned int c)
+		Matrix<T> GivensRotation(const unsigned int i, const unsigned int j, const unsigned int c) const
 		{
 			Matrix<T> givens(this->Row);
 			auto ai = this->operator[](i)[c];
@@ -302,7 +302,7 @@ namespace CTL
 			return *this;
 		}
 		
-		bool CheckQRConvergnece()
+		bool CheckQRConvergnece() const
 		{
 			for(unsigned int i = 0; i < this->Col-1; ++i)
 			{
@@ -362,7 +362,7 @@ namespace CTL
 			return norm;
 		}
 		
-		CTL::Matrix<T> TridiagonalizingHouseholder(const unsigned int c)
+		CTL::Matrix<T> TridiagonalizingHouseholder(const unsigned int c) const
 		{
 			CTL::Matrix<T> vec(this->Row-c-1,1);
 			for( unsigned int i = 0; i < vec.Row; ++i)
@@ -456,7 +456,6 @@ namespace CTL
 				for(unsigned int r = c; r < this->Row; ++r)
 				{
 					auto candidate = abs(this->operator[](r)[c]);
-//					std::cout << basic << ' ' << candidate << std::endl;
 					if(candidate > basic)
 					{
 						row = r;
@@ -480,7 +479,7 @@ namespace CTL
 			}
 		}
 		
-		Matrix<T> ReassembleFromLU()
+		Matrix<T> ReassembleFromLU() const
 		{
 			Matrix<T> L(this->Col);
 			Matrix<T> U(this->Row,this->Col);
@@ -501,6 +500,93 @@ namespace CTL
 			std::cout << "L:\n" <<  L << "\nU:\n" << U << std::endl;
 			return L*U;
 		}
+		
+		//Undefined result when used on non vector. Specialized form required for complex
+		T VectorDot(const Matrix<T>& m) const
+		{
+			unsigned int lim = (this->Col > this->Row ? this->Col : this->Row);
+			auto i1 = this->Val;
+			auto i2 = m.Val;
+			T value = T(0);
+			for(unsigned int i = 0; i < lim; ++i)
+			{
+				value+=*(i1++)**(i2++);
+			}
+			return value;
+		}
+		
+		Matrix<T> ProjectionVector(const Matrix<T>& v) const
+		{
+			auto u = *this;
+			u*=v.VectorDot(*this);
+			u/=this->VectorDot(*this);
+			return u;
+		}
+		
+		Matrix<T> GramSchmidt(const Matrix<T> v) const
+		{
+			return this->operator-(v.ProjectionVector(*this));
+		}
+		
+		Matrix<T> GramSchmidt(const std::initializer_list<const Matrix<T>>& vec) const
+		{
+			auto u = *this;
+			for( auto v : vec )
+			{
+				u-=v.ProjectionVector(*this);
+			}
+			return u;
+		}
+		
+		bool CheckPowerMethodConvergence(const Matrix<T>& v)
+		{
+			for(unsigned int i = 0; i < this->Row; ++i)
+			{
+				if(std::abs(std::abs(this->Val[i])-std::abs(v.Val[i])) > this->Epsilon(16)) return false;
+			}
+			return true;
+		}
+		
+		Matrix<T> LeadingEigenvector() const
+		{
+			Matrix<T> V(this->Row,1);
+			for(unsigned int i = 0; i < V.Row; i++)
+			{
+				V[i][0]=i;
+			}
+			V/=V.VectorNorm();
+			auto Vk = this->operator*(V);
+			Vk/=Vk.VectorNorm();
+			while(!V.CheckPowerMethodConvergence(Vk))
+			{
+				V = Vk;
+				Vk = this->operator*(V);
+				Vk/=Vk.VectorNorm();
+			}
+			return Vk;
+		}
+		
+		Matrix<T> SubleadingEigenvector(const Matrix<T>& l) const
+		{
+			Matrix<T> V(this->Row,1);
+			for(unsigned int i = 0; i < V.Row; i++)
+			{
+				V[i][0]=i;
+			}
+			V/=V.VectorNorm();
+			V=V.GramSchmidt(l);
+			auto Vk = this->operator*(V);
+			Vk/=Vk.VectorNorm();
+			while(!V.CheckPowerMethodConvergence(Vk))
+			{
+				V = Vk;
+				Vk = this->operator*(V);
+				Vk/=Vk.VectorNorm();
+				Vk=Vk.GramSchmidt(l);
+			}
+			return Vk;
+		}
 	};
 }
+template class CTL::Matrix<double>;
 #endif // _CTL_MATRIX_HPP_
