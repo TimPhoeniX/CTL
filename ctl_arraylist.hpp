@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <iostream>
-//#include <vector> //Get own destroyer later
 
 namespace CTL
 {
@@ -51,7 +50,7 @@ namespace CTL
 			{
 				this->Head[i]=std::move(this->Head[i+1]);
 			}
-			this->Alloc.destroy(this->Head+(Size--)-1);
+			this->Alloc.destroy(this->Head+(--Size));
 		}
 		
 	public:
@@ -78,7 +77,11 @@ namespace CTL
 		
 		~ArrayList()
 		{
-			std::_Destroy(this->Head,this->Head+this->Size,this->Alloc);
+			auto end = this->End();
+			for (auto ptr = this->Begin(); ptr != end; ++ptr )
+			{
+				this->Alloc.destroy(ptr);
+			}
 			this->Alloc.deallocate(this->Head,this->MaxSize);
 		}
 		
@@ -90,6 +93,16 @@ namespace CTL
 		Iterator End()
 		{
 			return this->Head+this->Size;
+		}
+
+		Iterator begin()
+		{
+			return this->Head;
+		}
+
+		Iterator end()
+		{
+			return this->Head + this->Size;
 		}
 		
 		ConstIterator Begin() const
@@ -114,7 +127,7 @@ namespace CTL
 		
 		bool Empty() const
 		{
-			return !bool(this->Size);
+			return this->Size == 0;
 		}
 		
 		SizeType GetSize() const
@@ -165,8 +178,8 @@ namespace CTL
 		ValueType PopBack()
 		{
 			if(this->Size == 0) throw std::out_of_range("PopBack called on empty list");
-			ValueType tmp = std::move(this->Head[Size-1]);
-			this->Alloc.destroy(this->Head+((Size--)-1));
+			ValueType tmp = std::move(this->Head[--this->Size]);
+			this->Alloc.destroy(this->Head+this->Size);
 			return tmp;
 		}
 		
@@ -234,7 +247,11 @@ namespace CTL
 		
 		void Clear()
 		{
-			std::_Destroy(this->Head,this->Head+this->Size,Alloc);
+			auto end = this->End();
+			for (auto ptr = this->Begin(); ptr != end; ++ptr)
+			{
+				this->Alloc.destroy(ptr);
+			}
 			this->Size=0;
 		}
 		

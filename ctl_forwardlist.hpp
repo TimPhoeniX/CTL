@@ -68,6 +68,7 @@ namespace CTL
 		Self& operator=(const Self& x) 
 		{
 			this->Node=x.Node;
+			return *this;
 		}
 		
 		Reference operator*() const noexcept
@@ -153,11 +154,12 @@ namespace CTL
 		{
 		}
 		
-		Self& operator=(const Self& x) 
+		Self& operator=(const Self& x)
 		{
 			this->Node=x.Node;
+			return *this;
 		}
-		
+
 		Reference operator*() const noexcept
 		{
 			return *reinterpret_cast<ValueType*>(&(this->Node->Data));
@@ -244,8 +246,8 @@ namespace CTL
 		Node* MakeNode(Args&&... args)
 		{
 			Node* tmp = this->GetNode();
-			::new ((void*)(tmp)) Node;
-			this->TAlloc.construct((ValueType*)&(tmp->Data),std::forward<Args>(args)...);
+			::new (reinterpret_cast<void*>(tmp)) Node;
+			this->TAlloc.construct(reinterpret_cast<ValueType*>(&(tmp->Data)),std::forward<Args>(args)...);
 			return tmp;
 		}
 		
@@ -259,7 +261,7 @@ namespace CTL
 			auto tmp = pos->Next;
 			if(tmp==this->Tail) this->Tail=pos;
 			pos->Next=tmp->Next;
-			this->TAlloc.destroy((ValueType*)&tmp->Data);
+			this->TAlloc.destroy(reinterpret_cast<ValueType*>(&tmp->Data));
 			tmp->~Node();
 			this->FreeNode(tmp);
 			--this->Size;
@@ -291,7 +293,7 @@ namespace CTL
 		
 		bool Empty() const
 		{
-			return !bool(this->Size);
+			return this->Size == 0;
 		}
 		
 		Reference Front()
@@ -333,14 +335,14 @@ namespace CTL
 		ValueType PopFront()
 		{
 			if(this->Size == 0) throw std::out_of_range("PopFront called on empty list");
-			auto val = reinterpret_cast<ValueType&&>(this->Head->Data);
 			auto tmp = this->Head;
 			if(tmp==this->Tail) this->Tail=nullptr;
+			auto val = reinterpret_cast<ValueType&&>(tmp->Data);
 			this->Head=tmp->Next;
+			--this->Size;
 			this->TAlloc.destroy(&tmp->Data);
 			tmp->~Node();
 			this->FreeNode(tmp);
-			--this->Size;
 			return val;
 		}
 		
@@ -410,7 +412,7 @@ namespace CTL
 		{
 			if(i >= this->Size) throw std::out_of_range("Get called with i >= Size");
 			auto tmp = this->Begin();
-			while(i--) tmp++;
+			while(i--) ++tmp;
 			return *tmp;
 		}
 		
@@ -418,7 +420,7 @@ namespace CTL
 		{
 			if(i >= this->Size) throw std::out_of_range("Get called with i >= Size");
 			auto tmp = this->Begin();
-			while(i--) tmp++;
+			while(i--) ++tmp;
 			return *tmp;
 		}
 		

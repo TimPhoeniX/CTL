@@ -6,8 +6,6 @@
 #ifndef _CTL_DATA_HPP_
 #define _CTL_DATA_HPP_
 
-#include "ctl_sort.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -21,7 +19,7 @@ namespace CTL
 	{
 	private:
 		T* DataPtr = nullptr;
-		int Size = 0;
+		unsigned int Size = 0;
 		
 		void ReadStream(std::istream& stream)
 		{
@@ -33,7 +31,7 @@ namespace CTL
 		
 		
 	public:
-		int GetSize()
+		unsigned int GetSize()
 		{
 			return this->Size;
 		}
@@ -58,7 +56,7 @@ namespace CTL
 		
 		void Load(std::istream& stream = std::cin)
 		{
-			if(this->DataPtr==nullptr) this->Clear();
+			if(this->DataPtr) this->Clear();
 			stream >> this->Size;
 			this->DataPtr = new T[Size];
 			this->ReadStream(stream);
@@ -66,15 +64,31 @@ namespace CTL
 		
 		void Load(const int size, std::istream& stream = std::cin)
 		{
-			if(this->DataPtr==nullptr) this->Clear();
+			if(this->DataPtr) this->Clear();
 			this->Size = size;
 			this->DataPtr = new T[Size];
 			this->ReadStream(stream);
 		}
+
+		void BinaryLoad(std::istream& stream, const unsigned int buff = 256)
+		{
+			if (this->DataPtr) this->Clear();
+			stream.read(reinterpret_cast<char*>(&this->Size), sizeof(this->Size));
+			this->DataPtr = new T[Size];
+			auto s = this->Size;
+			auto ptr = this->DataPtr;
+			while (s > buff)
+			{
+				s -= buff;
+				stream.read(reinterpret_cast<char*>(ptr), buff*sizeof(T));
+				ptr += buff;
+			}
+			stream.read(reinterpret_cast<char*>(ptr), s*sizeof(T));
+		}
 		
 		void Print(std::ostream& stream = std::cout) const
 		{
-			for(int i = 0; i<this->Size; ++i)
+			for(unsigned int i = 0; i<this->Size; ++i)
 			{
 				stream << this->DataPtr[i] << " ";
 			}
@@ -187,11 +201,17 @@ namespace CTL
 		{
 			delete[] this->DataPtr;
 		}
-		
+
 		template<typename Compar>
-		void Sort(void (*sort)(T*,T*,Compar)=CTL::MergeSort,Compar comp=std::less<T>())
+		bool Sorted(Compar comp)
 		{
-			sort(this->begin(),this->end(),comp);
+			auto b = this->begin();
+			auto a = b++;
+			while (b != this->end())
+			{
+				if (comp(*(b++), *(a++))) return false;
+			}
+			return true;
 		}
 	};
 	
