@@ -1,67 +1,87 @@
-/**
- * Conceptual Template Library by Piotr Grudzień
- * Stack Adapter
- */
-#ifndef _CTL_STACK_HPP_
-#define _CTL_STACK_HPP_
-
-#include "ctl_forwardlist.hpp"
+#ifndef CTL_STACK_HPP
+#define CTL_STACK_HPP
+#include <utility>
 
 namespace CTL
 {
-	template<typename T>
-	class Stack
+	template<typename Container>
+	using BackEnabledCheck = typename std::enable_if< std::is_same<void, decltype
+		(
+			std::declval<Container>().back(),
+			std::declval<Container>().pop_back(),
+			std::declval<Container>().push_back(std::declval<typename Container::value_type>())
+			)>::value>::type;
+
+	template<typename Container, typename = void>
+	struct IsBackEnabled : std::false_type {};
+
+	template<typename Container>
+	struct IsBackEnabled<Container, BackEnabledCheck<Container>> : std::true_type {};
+
+	template<typename Container>
+	class FrontStack
 	{
 	public:
-		typedef typename CTL::ForwardList<T> Storage;
-		typedef typename Storage::ValueType ValueType;
-		typedef typename Storage::SizeType SizeType;
-		typedef typename Storage::Reference Reference;
-		
+		using value_type = typename Container::value_type;
+
 	private:
-		Storage Store;
-		
+		Container container;
+
 	public:
-		Stack()
-		: Store()
+
+
+		void push(const value_type& val)
 		{
+			container.push_front(val);
 		}
-		
-// 		Stack(const Stack<T>& s)
-// 		: Store(s.Store)
-// 		{
-// 		}
-		
-		Stack(Stack<T>&& s)
-		: Store(std::move(s.Store))
+
+		void pop()
 		{
+			container.pop_front();
 		}
-		
-		bool Empty()
+
+		value_type& top()
 		{
-			return Store.Empty();
+			return container.front();
 		}
-		
-		SizeType GetSize()
+	};
+
+	template<typename Container>
+	class BackStack
+	{
+	public:
+		using value_type = typename Container::value_type;
+
+	private:
+		Container container;
+
+	public:
+
+		void push(const value_type& val)
 		{
-			return Store.GetSize();
+			container.push_back(val);
 		}
-		
-		template<typename... Args>
-		void Push(Args&&... args)
+
+		void pop()
 		{
-			Store.PushFront(std::forward<Args>(args)...);
+			container.pop_back();
 		}
-		
-		ValueType Pop()
+
+		value_type& top()
 		{
-			return Store.PopFront();
+			return container.back();
 		}
-		
-		Reference Top()
-		{
-			return Store.Front();
-		}
+	};
+
+	template<typename C>
+	using StackType = typename std::conditional<IsBackEnabled<C>::value, BackStack<C>, FrontStack<C>>::type;
+
+	template<typename T, typename Container>
+	class Stack : public StackType<Container>
+	{
+	public:
+		using value_type = typename StackType<Container>::value_type;
+
 	};
 }
 
