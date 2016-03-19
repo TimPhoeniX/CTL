@@ -86,6 +86,17 @@ namespace CTL
 		{
 			return a.Second<b.Second;
 		}
+
+		A& GetFirst()
+		{
+			return this->First;
+		}
+
+		B& GetSecond()
+		{
+			return this->Second;
+		}
+
 		const A& GetFirst() const 
 		{
 			return this->First;
