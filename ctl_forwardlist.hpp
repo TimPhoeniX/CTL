@@ -18,15 +18,18 @@ namespace CTL
 	class ForwardListNode
 	{
 	public:
-		typedef T ValueType;
-		typedef ValueType* Pointer;
-		typedef const ValueType* ConstPointer;
+		using value_type = T;
+		using pointer= value_type*;
+		using const_pointer = const value_type*;
 		
-		ForwardListNode<T>* Next = nullptr;
-		typename std::aligned_storage<sizeof(T),alignof(T)>::type Data;
+		ForwardListNode<T>* next = nullptr;
+		typename std::aligned_storage<sizeof(T),alignof(T)>::type data;
 		
-		ForwardListNode()
+		ForwardListNode() = default;
+
+		T& getData()
 		{
+			return *reinterpret_cast<T*>(&data);
 		}
 	};
 	
@@ -34,20 +37,13 @@ namespace CTL
 	class ForwardListIterator
 	{
 	public:
-		typedef T ValueType;
-		typedef ValueType* Pointer;
-		typedef ValueType& Reference;
-		typedef std::ptrdiff_t DifferenceType;
-		typedef std::forward_iterator_tag IteratorCategory;
+		typedef T value_type;
+		typedef value_type* pointer;
+		typedef value_type& reference;
+		typedef std::ptrdiff_t difference_type;
+		typedef std::forward_iterator_tag iteratorCategory;
 		typedef ForwardListIterator<T> Self;
 		typedef ForwardListNode<T> TypeNode;
-		
-		// C++ standard reqired typedefs
-		typedef ValueType value_type;
-		typedef Pointer pointer;
-		typedef Reference reference;
-		typedef DifferenceType difference_type;
-		typedef IteratorCategory iterator_category;
 		
 		TypeNode* Node = nullptr;
 		
@@ -71,26 +67,26 @@ namespace CTL
 			return *this;
 		}
 		
-		Reference operator*() const noexcept
+		reference operator*() const noexcept
 		{
-			return *reinterpret_cast<ValueType*>(&(this->Node->Data));
+			return *reinterpret_cast<value_type*>(&(this->Node->data));
 		}
 		
-		Pointer operator->() const noexcept
+		pointer operator->() const noexcept
 		{
-			return reinterpret_cast<ValueType*>(&(this->Node->Data));
+			return reinterpret_cast<value_type*>(&(this->Node->data));
 		}
 		
 		Self& operator++() noexcept
 		{
-			this->Node=this->Node->Next;
+			this->Node=this->Node->next;
 			return *this;
 		}
 		
 		Self operator++(int) noexcept
 		{
 			Self tmp(*this);
-			this->Node=this->Node->Next;
+			this->Node=this->Node->next;
 			return tmp;
 		}
 		
@@ -104,10 +100,10 @@ namespace CTL
 			return this->Node != x.Node;
 		}
 		
-		Self Next()
+		Self next()
 		{
 			if(this->Node)
-				return Self(this->Node->Next);
+				return Self(this->Node->next);
 			else
 				return Self(nullptr);
 		}
@@ -117,21 +113,14 @@ namespace CTL
 	class ForwardListConstIterator
 	{
 	public:
-		typedef T ValueType;
-		typedef const ValueType* Pointer;
-		typedef const ValueType& Reference;
-		typedef std::ptrdiff_t DifferenceType;
-		typedef std::forward_iterator_tag IteratorCategory;
-		typedef ForwardListConstIterator<ValueType> Self;
-		typedef ForwardListNode<ValueType> TypeNode;
-		typedef ForwardListIterator<ValueType> Iterator;
-		
-		// C++ standard reqired typedefs
-		typedef ValueType value_type;
-		typedef Pointer pointer;
-		typedef Reference reference;
-		typedef DifferenceType difference_type;
-		typedef IteratorCategory iterator_category;
+		typedef T value_type;
+		typedef const value_type* pointer;
+		typedef const value_type& reference;
+		typedef std::ptrdiff_t difference_type;
+		typedef std::forward_iterator_tag iterator_category;
+		typedef ForwardListConstIterator<value_type> Self;
+		typedef ForwardListNode<value_type> TypeNode;
+		typedef ForwardListIterator<value_type> iterator;
 		
 		TypeNode* Node = nullptr;
 		
@@ -149,7 +138,7 @@ namespace CTL
 		{
 		}
 		
-		ForwardListConstIterator(const Iterator& x)
+		ForwardListConstIterator(const iterator& x)
 		: Node(x.Node)
 		{
 		}
@@ -160,26 +149,26 @@ namespace CTL
 			return *this;
 		}
 
-		Reference operator*() const noexcept
+		reference operator*() const noexcept
 		{
-			return *reinterpret_cast<ValueType*>(&(this->Node->Data));
+			return *reinterpret_cast<value_type*>(&(this->Node->data));
 		}
 		
-		Pointer operator->() const noexcept
+		pointer operator->() const noexcept
 		{
-			return reinterpret_cast<ValueType*>(&(this->Node->Data));
+			return reinterpret_cast<value_type*>(&(this->Node->data));
 		}
 		
 		Self& operator++() noexcept
 		{
-			this->Node=this->Node->Next;
+			this->Node=this->Node->next;
 			return *this;
 		}
 		
 		Self operator++(int) noexcept
 		{
 			Self tmp(*this);
-			this->Node=this->Node->Next;
+			this->Node=this->Node->next;
 			return tmp;
 		}
 		
@@ -193,10 +182,10 @@ namespace CTL
 			return this->Node != x.Node;
 		}
 		
-		Self Next()
+		Self next()
 		{
 			if(this->Node)
-				return Self(this->Node->Next);
+				return Self(this->Node->next);
 			else
 				return Self(nullptr);
 		}
@@ -218,17 +207,17 @@ namespace CTL
 	class ForwardList
 	{
 	public:
-		typedef T ValueType;
-		typedef ValueType& Reference;
-		typedef const ValueType& ConstReference;
+		typedef T value_type;
+		typedef value_type& reference;
+		typedef const value_type& const_reference;
 		typedef std::size_t SizeType;
-		typedef ForwardListIterator<ValueType> Iterator;
-		typedef ForwardListIterator<ValueType> ConstIterator;
+		typedef ForwardListIterator<value_type> iterator;
+		typedef ForwardListIterator<value_type> const_iterator;
 		
 	private:
-		typedef ForwardListNode<ValueType> Node;
-		typedef typename std::allocator<ValueType>::template rebind<ValueType>::other TypeAllocator;
-		typedef typename std::allocator<ValueType>::template rebind<Node>::other NodeAllocator;
+		typedef ForwardListNode<value_type> Node;
+		typedef typename std::allocator<value_type>::template rebind<value_type>::other TypeAllocator;
+		typedef typename std::allocator<value_type>::template rebind<Node>::other NodeAllocator;
 		
 		Node* Head = nullptr;
 		Node* Tail = nullptr;
@@ -247,7 +236,7 @@ namespace CTL
 		{
 			Node* tmp = this->GetNode();
 			::new (reinterpret_cast<void*>(tmp)) Node;
-			this->TAlloc.construct(reinterpret_cast<ValueType*>(&(tmp->Data)),std::forward<Args>(args)...);
+			this->TAlloc.construct(reinterpret_cast<value_type*>(&(tmp->data)),std::forward<Args>(args)...);
 			return tmp;
 		}
 		
@@ -258,14 +247,14 @@ namespace CTL
 		
 		Node* EraseAfter(Node* pos)
 		{
-			auto tmp = pos->Next;
+			auto tmp = pos->next;
 			if(tmp==this->Tail) this->Tail=pos;
-			pos->Next=tmp->Next;
-			this->TAlloc.destroy(reinterpret_cast<ValueType*>(&tmp->Data));
+			pos->next=tmp->next;
+			this->TAlloc.destroy(reinterpret_cast<value_type*>(&tmp->data));
 			tmp->~Node();
 			this->FreeNode(tmp);
 			--this->Size;
-			return pos->Next;
+			return pos->next;
 		}
 		
 	public:
@@ -273,7 +262,7 @@ namespace CTL
 		{
 		}
 		
-		ForwardList(ForwardList<ValueType>&& f)
+		ForwardList(ForwardList<value_type>&& f)
 		: Head(f.Head), Tail(f.Tail), Size(f.Size)
 		{
 			f.Head = nullptr;
@@ -296,64 +285,64 @@ namespace CTL
 			return this->Size == 0;
 		}
 		
-		Reference Front()
+		reference Front()
 		{
 			if(this->Size == 0) throw std::out_of_range("Front called on empty list");
-			return *reinterpret_cast<ValueType*>(&this->Head->Data);
+			return *reinterpret_cast<value_type*>(&this->Head->data);
 		}
 		
-		Iterator Begin()
+		iterator begin()
 		{
-			return Iterator(Head);
+			return iterator(Head);
 		}
 		
-		Iterator End()
+		iterator end()
 		{
-			return Iterator(nullptr);
+			return iterator(nullptr);
 		}
 		
-		ConstIterator Begin() const
+		const_iterator begin() const
 		{
-			return ConstIterator(Head);
+			return const_iterator(Head);
 		}
 		
-		ConstIterator End() const
+		const_iterator end() const
 		{
-			return ConstIterator(nullptr);
+			return const_iterator(nullptr);
 		}
 		
-		ConstIterator CBegin()
+		const_iterator cbegin()
 		{
-			return ConstIterator(Head);
+			return const_iterator(Head);
 		}
 		
-		ConstIterator CEnd()
+		const_iterator cend()
 		{
-			return ConstIterator(nullptr);
+			return const_iterator(nullptr);
 		}
 		
-		ValueType PopFront()
+		value_type PopFront()
 		{
 			if(this->Size == 0) throw std::out_of_range("PopFront called on empty list");
 			auto tmp = this->Head;
 			if(tmp==this->Tail) this->Tail=nullptr;
-			auto val = reinterpret_cast<ValueType&&>(tmp->Data);
-			this->Head=tmp->Next;
+			auto val = reinterpret_cast<value_type&&>(tmp->data);
+			this->Head=tmp->next;
 			--this->Size;
-			this->TAlloc.destroy(&tmp->Data);
+			this->TAlloc.destroy(&tmp->data);
 			tmp->~Node();
 			this->FreeNode(tmp);
 			return val;
 		}
 		
-		ValueType PopBack()
+		value_type PopBack()
 		{
 			if(this->Size == 0) throw std::out_of_range("PopBack called on empty list");
 			if(Head!=Tail)
 			{
-				auto val = reinterpret_cast<ValueType&&>(this->Tail->Data);
-				auto i = this->Begin();
-				while(i.Next() != Tail) ++i;
+				auto val = reinterpret_cast<value_type&&>(this->Tail->data);
+				auto i = this->begin();
+				while(i.next() != Tail) ++i;
 				this->EraseAfter(i.Node);
 				return val;
 			}
@@ -363,22 +352,22 @@ namespace CTL
 			}
 		}
 		
-		void PushFront(const ValueType& e)
+		void PushFront(const value_type& e)
 		{
 			auto tmp = this->MakeNode(e);
-			tmp->Next = this->Head;
+			tmp->next = this->Head;
 			this->Head=tmp;
 			++this->Size;
 			if(this->Tail == nullptr) this->Tail = this->Head;
 		}
 		
-		void PushBack(const ValueType& e)
+		void PushBack(const value_type& e)
 		{
 			if(this->Tail==nullptr) return this->PushFront(e);
 			auto tmp = this->MakeNode(e);
-			this->Tail->Next=tmp;
+			this->Tail->next=tmp;
 			this->Tail=tmp;
-			++Size;
+			++this->Size;
 		}
 		
 		//Ugly, but will do for now.
@@ -392,54 +381,54 @@ namespace CTL
 			this->PopFront();
 		}
 		
-		void Insert(SizeType i, const ValueType& e)
+		void Insert(SizeType i, const value_type& e)
 		{
 			if(i==0) return this->PushFront(e);
 			else if(i==this->Size) return this->PushBack(e);
 			else if(i > this->Size) return;
 			else
 			{
-				auto it = this->Begin();
+				auto it = this->begin();
 				while(--i) ++it;
 				auto tmp = this->MakeNode(e);
-				tmp->Next = it.Node->Next;
-				it.Node->Next = tmp;
+				tmp->next = it.Node->next;
+				it.Node->next = tmp;
 				++this->Size;
 			}
 		}
 		
-		Reference Get(SizeType i)
+		reference Get(SizeType i)
 		{
 			if(i >= this->Size) throw std::out_of_range("Get called with i >= Size");
-			auto tmp = this->Begin();
+			auto tmp = this->begin();
 			while(i--) ++tmp;
 			return *tmp;
 		}
 		
-		ConstReference Get(SizeType i) const 
+		const_reference Get(SizeType i) const 
 		{
 			if(i >= this->Size) throw std::out_of_range("Get called with i >= Size");
-			auto tmp = this->Begin();
+			auto tmp = this->begin();
 			while(i--) ++tmp;
 			return *tmp;
 		}
 		
-		Iterator Find(const ValueType& e)
+		iterator Find(const value_type& e)
 		{
-			for(auto tmp = this->Begin(); tmp != this->End(); ++tmp)
+			for(auto tmp = this->begin(); tmp != this->end(); ++tmp)
 			{
 				if(*tmp == e) return tmp;
 			}
-			return Iterator(nullptr);
+			return iterator(nullptr);
 		}
 		
-		ConstIterator Find(const ValueType& e) const
+		const_iterator Find(const value_type& e) const
 		{
-			for(auto tmp = this->Begin(); tmp != this->End(); ++tmp)
+			for(auto tmp = this->begin(); tmp != this->end(); ++tmp)
 			{
 				if(*tmp == e) return tmp;
 			}
-			return ConstIterator(nullptr);
+			return const_iterator(nullptr);
 		}
 		
 		void Erase(SizeType i)
@@ -447,35 +436,44 @@ namespace CTL
 			if(i == 0)
 			{
 				this->PopFront();
-				return;
 			}
 			else if(i == this->Size-1)
 			{
 				this->PopBack();
-				return;
 			}
 			else if(i >= this->Size)
 			{
-				return;
 			}
 			else 
 			{
-				auto it = this->Begin();
+				auto it = this->begin();
 				while(--i) ++it;
 				this->EraseAfter(it.Node);
 			}
 		}
+
+		void Erase(const value_type& e)
+		{
+			auto it = this->Head;
+			int i = 0;
+			while(this->Head != nullptr && it->getData() != e)
+			{
+				it = it->next;
+				++i;
+			}
+			this->Erase(i);
+		}
 		
 		void Print(std::ostream& out = std::cout) const
 		{
-			auto i = this->Begin();
-			while(i!=this->End())
+			auto i = this->begin();
+			while(i!=this->end())
 			{
 				out << *(i++) << ' ';
 			}
 		}
 		
-		friend std::ostream& operator<<(std::ostream& out, const CTL::ForwardList<ValueType>& L)
+		friend std::ostream& operator<<(std::ostream& out, const CTL::ForwardList<value_type>& L)
 		{
 			L.Print(out);
 			return out;
