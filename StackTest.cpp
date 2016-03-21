@@ -2,25 +2,27 @@
 #include <forward_list>
 #include <list>
 #include <iostream>
+#include<chrono>
+#include<thread>
 
 int main()
 {
 	{
-		CTL::Stack<int, std::forward_list<int>> li;
-		for(int i = 0; i < 1000000; ++i)
+		std::forward_list<int> li;
+		for(int i = 0; i < 10000000; ++i)
 		{
-			li.push(i);
+			li.push_front(i);
 		}
-		std::cout << li.top() << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
 	{
-		CTL::Stack<int, std::list<int>> li;
-		for(int i = 0; i < 1000000; ++i)
+		std::list<int> li;
+		for(int i = 0; i < 10000000; ++i)
 		{
-			li.push(i);
+			li.push_front(i);
 		}
-		std::cout << li.top() << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
 	return 0;
