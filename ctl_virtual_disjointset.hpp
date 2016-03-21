@@ -68,7 +68,7 @@ namespace CTL
 		InTree<T>* parent = nullptr;
 		T vertex;
 	public:
-		InTree(const T& vert) : vertex(vert), parent(this)
+		InTree(const T& vert) : parent(this), vertex(vert)
 		{
 			intreenodes.PushFront(this);
 		}

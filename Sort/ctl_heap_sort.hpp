@@ -1,20 +1,22 @@
 #ifndef _CTL_HEAP_SORT_HPP_
 #define _CTL_HEAP_SORT_HPP_
+#include <type_info>
+#include <iterator>
 
 namespace CTL
 {	
-	template<typename Iterator, typename Compare>
-	void Heapify(Iterator first, Iterator last, Iterator i, Compare comp)
+	template<typename RAIterator, typename Compare>
+	void Heapify(RAIterator first, RAIterator last, RAIterator i, Compare comp)
 	{
-//		typedef typename std::iterator_traits<Iterator>::value_type Type;
-		Iterator Top = i;
+//		typedef typename std::iterator_traits<RAIterator>::value_type Type;
+		RAIterator Top = i;
 		int Node = i-first;
-		Iterator left=(first+(2*Node+1));
+		RAIterator left=(first+(2*Node+1));
 		if(left < last && comp(*Top,*left))
 		{
 			Top = left;
 		}
-		Iterator right=(first+(2*Node+2));
+		RAIterator right=(first+(2*Node+2));
 		if(right < last && comp(*Top,*right))
 		{
 			Top = right;
@@ -26,19 +28,20 @@ namespace CTL
 		}
 	}
 	
-	template<typename Iterator, typename Compare>
-	void BuildHeap(Iterator first, Iterator last, Compare comp)
+	template<typename RAIterator, typename Compare>
+	void BuildHeap(RAIterator first, RAIterator last, Compare comp)
 	{
-		Iterator i = first+(((last-first)/2)-1);
+		RAIterator i = first+(((last-first)/2)-1);
 		while(i>=first)
 		{
 			CTL::Heapify(first,last,i--,comp);
 		}
 	}
 	
-	template<typename Iterator, typename Compare>
-	void HeapSort(Iterator first, Iterator last, Compare comp)
+	template<typename RAIterator, typename Compare>
+	void HeapSort(RAIterator first, RAIterator last, Compare comp)
 	{
+		static_assert(std::is_base_of<std::random_acces_iterator_tag,std::iterator_traits<RAIterator>::iterator_category>::value,"HeapSort requires random acces iterator!");
 		CTL::BuildHeap(first, last, comp);
 		while(last>first)
 		{
