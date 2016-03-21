@@ -152,6 +152,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\StackTest.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Utility\ctl_makearray.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
