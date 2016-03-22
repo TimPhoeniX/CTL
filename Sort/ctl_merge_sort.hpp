@@ -3,49 +3,52 @@
 	Stable MergeSort 
 */
 
-#ifndef _CTL_MERGE_SORT_HPP_
-#define _CTL_MERGE_SORT_HPP_
+#ifndef CTL_MERGE_SORT_HPP
+#define CTL_MERGE_SORT_HPP
 
 #include <iterator>
+#include <memory>
+#include <algorithm>
 
 namespace CTL
 {
-	template<typename T, typename Compar>
-	void MergeSort(T first, T last, Compar comp)
+	template<typename RAIterator, typename Compar>
+	void MergeSort(RAIterator first, RAIterator last, Compar comp)
 	{
-		typedef typename std::iterator_traits<T>::value_type Type;
+		static_assert(std::is_base_of<std::random_access_iterator_tag,typename std::iterator_traits<RAIterator>::iterator_category>::value, "MergeSort requires a random acces iterator!");
+		using std::move;
+		using Type = typename std::iterator_traits<RAIterator>::value_type;
 		if((last-first)>1)
 		{
-			T mid=first+(last-first)/2;
+			RAIterator mid=first+(last-first)/2;
 			MergeSort(first,mid,comp);
 			MergeSort(mid,last,comp);
-			T result = new Type[last-first];
-			T left=first, right=mid, resultIt=result;
-			while(left != mid && right != last)
+			void* buffer = ::operator new[]((last-mid)*sizeof(Type));
+			Type* bbegin = static_cast<Type*>(buffer);
+			Type* bend = bbegin + (mid - first);
+			std::uninitialized_copy(std::make_move_iterator(first),std::make_move_iterator(mid), bbegin);
+			while(bbegin !=bend && mid != last)
 			{
-				if(comp(*(right),*(left)))
+				if(comp(*(mid), *(bbegin)))
 				{
-					(*(resultIt++))=std::move(*(right++));
+					(*(first++)) = move(*(mid++));
 				}
 				else
 				{
-					(*(resultIt++))=std::move(*(left++));
+					(*(first++)) = move(*bbegin);
+					(bbegin++)->~Type();
 				}
 			}
-			while(left != mid)
+			while(bbegin != bend)
 			{
-				(*(resultIt++))=std::move(*(left++));
+				(*(first++)) = move(*bbegin);
+				(bbegin++)->~Type();
 			}
-			while(right != last)
+			while(mid != last)
 			{
-				(*(resultIt++))=std::move(*(right++));
+				(*(first++)) = move(*(mid++));
 			}
-			left = first; resultIt=result;
-			while(left!=last)
-			{
-				(*(left++))=std::move(*(resultIt++));
-			}
-			delete[] result;
+			::operator delete[](buffer);
 		}
 	}
 }
