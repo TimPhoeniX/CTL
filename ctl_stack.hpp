@@ -1,30 +1,16 @@
 #ifndef CTL_STACK_HPP
 #define CTL_STACK_HPP
-#include <utility>
+#include "Utility/ctl_traits.hpp"
 
 namespace CTL
 {
-	template<typename Container>
-	using BackEnabledCheck = typename std::enable_if< std::is_same<void, decltype
-		(
-			std::declval<Container>().back(),
-			std::declval<Container>().pop_back(),
-			std::declval<Container>().push_back(std::declval<typename Container::value_type>())
-			)>::value>::type;
-
-	template<typename Container, typename = void>
-	struct IsBackEnabled : std::false_type {};
-
-	template<typename Container>
-	struct IsBackEnabled<Container, BackEnabledCheck<Container>> : std::true_type {};
-
 	template<typename Container>
 	class FrontStack
 	{
 	public:
 		using value_type = typename Container::value_type;
 
-	private:
+	protected:
 		Container container;
 
 	public:
@@ -33,6 +19,11 @@ namespace CTL
 		void push(const value_type& val)
 		{
 			container.push_front(val);
+		}
+
+		void push(value_type&& val)
+		{
+			container.push_front(std::move(val));
 		}
 
 		void pop()
@@ -52,7 +43,7 @@ namespace CTL
 	public:
 		using value_type = typename Container::value_type;
 
-	private:
+	protected:
 		Container container;
 
 	public:
@@ -60,6 +51,11 @@ namespace CTL
 		void push(const value_type& val)
 		{
 			container.push_back(val);
+		}
+
+		void push(value_type&& val)
+		{
+			container.push_back(std::move(val));
 		}
 
 		void pop()
@@ -81,7 +77,27 @@ namespace CTL
 	{
 	public:
 		using value_type = typename StackType<Container>::value_type;
+		using size_type = typename Container::size_type;
 
+	private:
+
+//		static_assert(std::is_same<T, Container::value_type>::value, "Container does not store type T");
+		
+
+	public:
+		template<typename TestSize = Container>
+		typename std::enable_if<IsSizeEnabled<TestSize>::value,size_type>::type
+			size() const
+		{
+			return this->container.size();
+		}
+
+		template<typename TestSize = Container>
+		typename std::enable_if<!IsSizeEnabled<TestSize>::value,size_type>::type
+			size() const
+		{
+			return std::distance(std::begin(this->container), std::end(this->container));
+		}
 	};
 }
 
