@@ -1,6 +1,5 @@
-#ifndef _CTL_HEAP_SORT_HPP_
-#define _CTL_HEAP_SORT_HPP_
-#include <type_info>
+#ifndef CTL_HEAP_SORT_HPP
+#define CTL_HEAP_SORT_HPP
 #include <iterator>
 
 namespace CTL
@@ -8,9 +7,10 @@ namespace CTL
 	template<typename RAIterator, typename Compare>
 	void Heapify(RAIterator first, RAIterator last, RAIterator i, Compare comp)
 	{
+		using std::swap;
 //		typedef typename std::iterator_traits<RAIterator>::value_type Type;
 		RAIterator Top = i;
-		std::iterator_traits<RAIterator>::difference_type Node = i-first;
+		typename std::iterator_traits<RAIterator>::difference_type Node = i-first;
 		RAIterator left=(first+(2*Node+1));
 		if(left < last && comp(*Top,*left))
 		{
@@ -23,7 +23,7 @@ namespace CTL
 		}
 		if(Top!=i)
 		{
-			std::swap(*i,*Top);
+			swap(*i,*Top);
 			CTL::Heapify(first,last,Top,comp);
 		}
 	}
@@ -41,11 +41,12 @@ namespace CTL
 	template<typename RAIterator, typename Compare>
 	void HeapSort(RAIterator first, RAIterator last, Compare comp)
 	{
-		static_assert(std::is_base_of<std::random_acces_iterator_tag,std::iterator_traits<RAIterator>::iterator_category>::value,"HeapSort requires random acces iterator!");
+		using std::swap;
+		static_assert(std::is_base_of<std::random_access_iterator_tag,typename std::iterator_traits<RAIterator>::iterator_category>::value,"HeapSort requires a random acces iterator!");
 		CTL::BuildHeap(first, last, comp);
 		while(last>first)
 		{
-			std::swap(*first,*(last-1));
+			swap(*first,*(last-1));
 			CTL::Heapify(first,--last,first,comp);
 		}
 	}
