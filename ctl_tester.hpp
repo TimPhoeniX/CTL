@@ -29,6 +29,11 @@ public:
 		--count;
 	}
 	
+	bool operator<(const Tester& other) const
+	{
+		return this->id < other.id;
+	}
+
 	Tester& operator=(const Tester& t)
 	{
 		this->id=t.id;
