@@ -10,6 +10,6 @@ int main()
 {
 	CTL::Stack<int, std::forward_list<int>> stack;
 	stack.push(5);
-	std::cout << stack.size() << std::endl;
+	std::cout << stack.empty() << std::endl;
 	return 0;
 }
