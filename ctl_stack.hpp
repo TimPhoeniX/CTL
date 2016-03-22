@@ -1,6 +1,7 @@
 #ifndef CTL_STACK_HPP
 #define CTL_STACK_HPP
 #include "Utility/ctl_traits.hpp"
+#include <algorithm>
 
 namespace CTL
 {
@@ -24,6 +25,12 @@ namespace CTL
 		void push(value_type&& val)
 		{
 			container.push_front(std::move(val));
+		}
+		
+		template<typename... Args>
+		void emplace(Args&&... args)
+		{
+			container.emplace_front(std::forward<Args>(args)...);
 		}
 
 		void pop()
@@ -56,6 +63,12 @@ namespace CTL
 		void push(value_type&& val)
 		{
 			container.push_back(std::move(val));
+		}
+
+		template<typename... Args>
+		void emplace(Args&&... args)
+		{
+			container.emplace_back(std::forward<Args>(args)...);
 		}
 
 		void pop()
@@ -97,6 +110,17 @@ namespace CTL
 			size() const
 		{
 			return std::distance(std::begin(this->container), std::end(this->container));
+		}
+
+		bool empty() const
+		{
+			return this->container.empty();
+		}
+
+		void swap( Stack<T,Container>& other)
+		{
+			using std::swap;
+			swap(this->container, other.container);
 		}
 	};
 }
