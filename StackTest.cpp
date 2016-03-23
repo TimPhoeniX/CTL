@@ -5,12 +5,14 @@
 #include <chrono>
 #include <thread>
 #include "Utility/ctl_makearray.hpp"
+#include <Sort/ctl_quick_sort.hpp>
 
 int main()
 {
 	std::list<int> list;
-	list.resize(100);
-	for(auto& i : list)
-	std::cout << &i << std::endl;
+	list.resize(1000000);
+	std::this_thread::sleep_for(std::chrono::seconds(15));
+//	for(auto& i : list)
+//	std::cout << &i << std::endl;
 	return 0;
 }
