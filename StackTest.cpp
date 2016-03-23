@@ -8,8 +8,9 @@
 
 int main()
 {
-	CTL::Stack<int, std::forward_list<int>> stack;
-	stack.push(5);
-	std::cout << stack.empty() << std::endl;
+	std::list<int> list;
+	list.resize(100);
+	for(auto& i : list)
+	std::cout << &i << std::endl;
 	return 0;
 }
