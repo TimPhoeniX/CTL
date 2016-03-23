@@ -1,14 +1,15 @@
 /**
-	Conceptual Template Library by Piotr Grudzień
-	QuickSort
-*/
+ * Conceptual Template Library by Piotr Grudzień
+ * QuickSort
+ */
 
-#ifndef _CTL_QUICK_SORT_HPP_
-#define _CTL_QUICK_SORT_HPP_
+#ifndef CTL_QUICK_SORT_HPP
+#define CTL_QUICK_SORT_HPP
 
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <stack>
 #include <condition_variable>
 #include "ctl_pair.hpp"
 #include "ctl_stack.hpp"
@@ -38,42 +39,64 @@ namespace CTL
 		return iIt;
 	}
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = LomutoPartition>
-	void QuickSort(RAIterator first, RAIterator last, Compar comp)
+	template<typename RAIterator, typename Compar>
+	inline RAIterator RightmostPivot(RAIterator first, RAIterator last, Compar& comp)
 	{
-		if(last - first < 2) return;
-//		std::cerr << "Partitioning " << last-first << '\n';
-		RAIterator p = Partition(first, last, comp);
-		QuickSort<RAIterator, Compar, Partition>(first, p, comp);
-		QuickSort<RAIterator, Compar, Partition>(p + 1, last, comp);
+		return --last;
 	}
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = LomutoPartition>
+	template<typename RAIterator, typename Compar, RAIterator(*Pivot)(RAIterator, RAIterator, Compar&) = RightmostPivot<RAIterator,Compar>>
+	inline RAIterator HoarePartition(RAIterator first, RAIterator last, Compar& comp)
+	{
+		using std::swap;
+		using Type = typename std::iterator_traits<RAIterator>::value_type;
+		Type pivot = *(Pivot(first,last--,comp));
+		while (true)
+		{
+			while (comp(*first, pivot)) ++first;
+			while (comp(pivot, *last)) --last;
+			if (first < last) swap(*first, *last);
+			else return last;
+		}
+
+	}
+
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = HoarePartition<RAIterator,Compar>>
+	void QuickSort(RAIterator first, RAIterator last, Compar comp)
+	{
+		static_assert(std::is_base_of<std::random_access_iterator_tag,typename std::iterator_traits<RAIterator>::iterator_category>::value, "QuickSort requires a random access iterator");
+		if(last - first < 2) return;
+		RAIterator p = Partition(first, last, comp);
+		QuickSort<RAIterator, Compar, Partition>(first, p, comp);
+		QuickSort<RAIterator, Compar, Partition>(p, last, comp);
+	}
+
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = HoarePartition<RAIterator,Compar>>
 	void NaiveQuickSort(RAIterator first, RAIterator last, Compar comp)
 	{
 		if(last - first < 2) return;
 		if(last - first < 1024) return QuickSort<RAIterator, Compar, Partition>(first, last, comp);
 		RAIterator p = Partition(first, last, comp);
 		std::thread left(NaiveQuickSort<RAIterator, Compar, Partition>, first, p, comp);
-		std::thread right(NaiveQuickSort<RAIterator, Compar, Partition>, p+1, last, comp);
+		std::thread right(NaiveQuickSort<RAIterator, Compar, Partition>, p, last, comp);
 		left.join();
 		right.join();
 	}
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = LomutoPartition>
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = HoarePartition<RAIterator, Compar>>
 	void LimitedQuickSort(RAIterator first, RAIterator last, Compar comp, unsigned int limit)
 	{
 		if(last - first < 2) return;
 		if(limit < 2) return QuickSort<RAIterator, Compar, Partition>(first, last, comp);
 		RAIterator p = Partition(first, last, comp);
-		std::thread right(LimitedQuickSort<RAIterator, Compar, Partition>, p + 1, last, comp, limit / 2 + (p - first < last - p ? limit % 2 : 0));
+		std::thread right(LimitedQuickSort<RAIterator, Compar, Partition>, p, last, comp, limit / 2 + (p - first < last - p ? limit % 2 : 0));
 		LimitedQuickSort<RAIterator, Compar, Partition>(first, p, comp, limit / 2 + (p - first < last - p ? 0 : limit % 2));
 		right.join();
 	}
 
 //	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = LomutoPartition>
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = LomutoPartition>
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = HoarePartition<RAIterator, Compar>>
 	class ParallelQuickSort
 	{
 	private:
@@ -81,7 +104,7 @@ namespace CTL
 		ArrayList<std::thread> Threadpool;
 		std::atomic_uint Working;
 		std::atomic_bool Standby;
-		Stack<Part> Partitions;
+		std::stack<Part> Partitions;
 		std::mutex Sync;
 		std::mutex Queue;
 		std::condition_variable Workers;
