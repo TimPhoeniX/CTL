@@ -12,7 +12,7 @@ namespace CTL
 	template<typename Container>
 	using HasSizeCheck = typename std::enable_if< std::is_same<std::true_type, decltype
 		(
-			std::declval<Container>.size(),
+			std::declval<Container>().size(),
 			std::true_type()
 			)
 	>::value>::type;

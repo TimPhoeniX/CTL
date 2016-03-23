@@ -1,23 +1,20 @@
 CPPFLAGS= -std=c++11 -Wall -Wextra
 CC = g++
 Name = test.exe
-#Sources= aisd2-1.cpp
 Sources= StackTest.cpp
-Headers= ctl_virtual_disjointset.hpp
+Headers= 
 
-.PHONY: default runt runl clean tar
+.PHONY: default run clean tar
 
 default: $(Name)
 
 $(Name): $(Sources) $(Headers)
 	$(CC) -o $@ $(Sources) $(CPPFLAGS)
 
-runl: $(Name)
-	./$< l < alg.txt
-	
-runt: $(Name)
-	./$< t < alg.txt
+run: $(Name)
+	./$<
 
 clean:
 	rm -rf *~
 	rm -rf *.exe
+	

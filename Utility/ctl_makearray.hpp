@@ -11,7 +11,7 @@ namespace CTL
 	template<typename Pointer, typename... Size>
 	Pointer MakeArray(std::size_t size, Size... rest)
 	{
-		using Type = std::pointer_traits<Pointer>::element_type;
+		using Type = typename std::pointer_traits<Pointer>::element_type;
 		static_assert(std::is_constructible<Pointer, Type*>::value, "Unable to construct Pointer type");
 
 		Pointer tmp(new Type[size]);
@@ -25,7 +25,7 @@ namespace CTL
 	template<typename Pointer>
 	Pointer MakeArray(std::size_t size)
 	{
-		using Type = std::pointer_traits<Pointer>::element_type;
+		using Type = typename std::pointer_traits<Pointer>::element_type;
 		return Pointer(new Type[size]);
 	}
 }
