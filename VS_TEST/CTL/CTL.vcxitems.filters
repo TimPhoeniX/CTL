@@ -7,6 +7,9 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{40e9e6f7-f705-4469-b69a-668b8e265f37}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Container">
+      <UniqueIdentifier>{4ef38268-f151-4b27-a438-f2b1819861d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Sort\ctl_heap_sort.hpp">
@@ -21,11 +24,46 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Utility\ctl_makearray.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\ctl_singleton.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Utility\ctl_traits.hpp">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\ctl_pair.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\ctl_tester.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Utility\ctl_singleton.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_arraylist.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_bst.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_data.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_deprecated_stack.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_forwardlist.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_linkedlist.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_matrix.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_open_map.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_proto_hashmap.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_stack.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Container\ctl_virtual_disjointset.hpp">
+      <Filter>Container</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
