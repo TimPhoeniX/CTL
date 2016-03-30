@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_arraylist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_bst.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_data.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_deprecated_stack.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_forwardlist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_linkedlist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_matrix.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_open_map.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_proto_hashmap.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_stack.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_virtual_disjointset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ctl_pair.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ctl_tester.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_heap_sort.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_merge_sort.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_quick_sort.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_makearray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_singleton.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_traits.hpp" />
+  </ItemGroup>
+</Project>
