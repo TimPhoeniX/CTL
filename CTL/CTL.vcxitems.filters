@@ -63,5 +63,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_quick_sort.hpp">
       <Filter>Sort</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ctl_pair.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ctl_tester.hpp" />
   </ItemGroup>
 </Project>
