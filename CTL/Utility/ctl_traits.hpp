@@ -17,14 +17,6 @@ namespace CTL
 		)
 	>::value>::type;
 
-	template<typename Container>
-	using HasSizeCheck2 = typename std::enable_if<decltype
-		(
-			std::declval<Container>().size(),
-			std::true_type()
-		)::value>::type;
-
-
 	template<typename Container, typename = void>
 	struct IsSizeEnabled : std::false_type {};
 
@@ -65,5 +57,3 @@ namespace CTL
 }
 
 #endif // !CTL_TRAITS_HPP
-
-

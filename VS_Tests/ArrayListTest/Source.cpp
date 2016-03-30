@@ -1,10 +1,8 @@
+#include <vector>
 #include <CTL/Container/ctl_arraylist.hpp>
-
-template class CTL::ArrayList<int>;
+#include <CTL/Utility/ctl_traits.hpp>
 
 int main()
 {
-	CTL::ArrayList<int> s;
-	CTL::ArrayList<int> o(s);
-	std::cout << s.size();
+	std::cout << CTL::IsSizeEnabled<std::vector<int>>::value;
 }
