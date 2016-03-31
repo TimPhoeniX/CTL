@@ -23,9 +23,9 @@ namespace CTL
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
 		Type pivot = *(last - 1);
 		--last;
-		for (RAIterator It = first; first != last; ++It)
+		for(RAIterator It = first; first != last; ++It)
 		{
-			if (*It < pivot))
+			if(*It < pivot)
 			{
 				std::swap(*first, *It);
 				++first;
@@ -65,57 +65,107 @@ namespace CTL
 		return --last;
 	}
 
-	template<typename RAIterator, RAIterator(*Pivot)(RAIterator, RAIterator) = RightmostPivot<RAIterator>>
+	template<typename RAIterator>
+	inline RAIterator HoarePartition(RAIterator first, RAIterator last)
+	{
+		using std::swap;
+		using Type = typename std::iterator_traits<RAIterator>::value_type;
+		Type pivot = *(RightmostPivot<RAIterator>(first, last--));
+		while(true)
+		{
+			while(*first < pivot) ++first;
+			while(pivot < *last) --last;
+			if(first < last) swap(*first, *last);
+			else return last;
+		}
+	}
+
+	template<typename RAIterator, RAIterator(*Pivot)(RAIterator, RAIterator)>
 	inline RAIterator HoarePartition(RAIterator first, RAIterator last)
 	{
 		using std::swap;
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
 		Type pivot = *(Pivot(first, last--));
-		while (true)
+		while(true)
 		{
-			while (*first < pivot) ++first;
-			while (pivot < last) --last;
-			if (first < last) swap(*first, *last);
+			while(*first < pivot) ++first;
+			while(pivot < *last) --last;
+			if(first < last) swap(*first, *last);
 			else return last;
 		}
 	}
 
-	template<typename RAIterator, typename Compar, RAIterator(*Pivot)(RAIterator, RAIterator, Compar) = RightmostPivot<RAIterator,Compar>>
+	template<typename RAIterator, typename Compar>
 	inline RAIterator HoarePartition(RAIterator first, RAIterator last, Compar comp)
 	{
 		using std::swap;
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
-		Type pivot = *(Pivot(first,last--,comp));
-		while (true)
+		Type pivot = *(RightmostPivot<RAIterator,Compar>(first, last--, comp));
+		while(true)
 		{
-			while (comp(*first, pivot)) ++first;
-			while (comp(pivot, *last)) --last;
-			if (first < last) swap(*first, *last);
+			while(comp(*first, pivot)) ++first;
+			while(comp(pivot, *last)) --last;
+			if(first < last) swap(*first, *last);
 			else return last;
 		}
 	}
 
-	template<typename RAIterator, RAIterator(*Partition)(RAIterator, RAIterator) = HoarePartition<RAIterator>>
+	template<typename RAIterator, typename Compar, RAIterator(*Pivot)(RAIterator, RAIterator, Compar)>
+	inline RAIterator HoarePartition(RAIterator first, RAIterator last, Compar comp)
+	{
+		using std::swap;
+		using Type = typename std::iterator_traits<RAIterator>::value_type;
+		Type pivot = *(Pivot(first, last--, comp));
+		while(true)
+		{
+			while(comp(*first, pivot)) ++first;
+			while(comp(pivot, *last)) --last;
+			if(first < last) swap(*first, *last);
+			else return last;
+		}
+	}
+
+	template<typename RAIterator>
 	void QuickSort(RAIterator first, RAIterator last)
 	{
 		static_assert(std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<RAIterator>::iterator_category>::value, "QuickSort requires a random access iterator");
-		if (last - first < 2) return;
-		RAIterator p = Partition(first, last);
-		QuickSort<RAIterator, Compar, Partition>(first, p);
-		QuickSort<RAIterator, Compar, Partition>(p, last);
+		if(last - first < 2) return;
+		RAIterator p = HoarePartition<RAIterator>(first, last);
+		QuickSort<RAIterator>(first, p);
+		QuickSort<RAIterator>(p, last);
 	}
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar) = HoarePartition<RAIterator,Compar>>
+	template<typename RAIterator, RAIterator(*Partition)(RAIterator, RAIterator)>
+	void QuickSort(RAIterator first, RAIterator last)
+	{
+		static_assert(std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<RAIterator>::iterator_category>::value, "QuickSort requires a random access iterator");
+		if(last - first < 2) return;
+		RAIterator p = Partition(first, last);
+		QuickSort<RAIterator, Partition>(first, p);
+		QuickSort<RAIterator, Partition>(p, last);
+	}
+
+	template<typename RAIterator, typename Compar>
 	void QuickSort(RAIterator first, RAIterator last, Compar comp)
 	{
 		static_assert(std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<RAIterator>::iterator_category>::value, "QuickSort requires a random access iterator");
-		if (last - first < 2) return;
+		if(last - first < 2) return;
+		RAIterator p = HoarePartition<RAIterator,Compar>(first, last, comp);
+		QuickSort<RAIterator, Compar>(first, p, comp);
+		QuickSort<RAIterator, Compar>(p, last, comp);
+	}
+
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar)>
+	void QuickSort(RAIterator first, RAIterator last, Compar comp)
+	{
+		static_assert(std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<RAIterator>::iterator_category>::value, "QuickSort requires a random access iterator");
+		if(last - first < 2) return;
 		RAIterator p = Partition(first, last, comp);
 		QuickSort<RAIterator, Compar, Partition>(first, p, comp);
 		QuickSort<RAIterator, Compar, Partition>(p, last, comp);
 	}
 
-	template<typename RAIterator, RAIterator(*Partition)(RAIterator, RAIterator) = HoarePartition<RAIterator>>
+	template<typename RAIterator, RAIterator(*Partition)(RAIterator, RAIterator) = &HoarePartition<RAIterator>>
 	class ParallelQuickSort
 	{
 	private:
@@ -132,11 +182,11 @@ namespace CTL
 		void Worker()
 		{
 			std::unique_lock<std::mutex> SortLock(this->Sync);
-			while (this->Standby)
+			while(this->Standby)
 			{
-				if (this->Partitions.Empty())
+				if(this->Partitions.empty())
 				{
-					if (this->Working)
+					if(this->Working)
 					{
 						this->Workers.wait(SortLock);
 					}
@@ -148,21 +198,22 @@ namespace CTL
 				}
 				else
 				{
-					auto partition = this->Partitions.Pop();
+					auto partition = this->Partitions.top();
+					this->Partitions.pop();
 					++this->Working;
 					SortLock.unlock();
 					RAIterator left = partition.GetFirst(), right = partition.GetSecond();
-					while (right - left > 1024)
+					while(right - left > 1024)
 					{
 						auto p = Partition(left, right);
-						if (right - p < 1025)
+						if(right - p < 1025)
 						{
 							QuickSort<RAIterator, Partition>(p + 1, right);
 						}
 						else
 						{
 							SortLock.lock();
-							this->Partitions.Push(Part(p + 1, right));
+							this->Partitions.push(Part(p + 1, right));
 							SortLock.unlock();
 							this->Workers.notify_one();
 						}
@@ -181,7 +232,7 @@ namespace CTL
 			Working(0),
 			Standby(true)
 		{
-			while (pool--)
+			while(pool--)
 			{
 				this->Threadpool.push_back(std::thread(&ParallelQuickSort::Worker, this));
 			}
@@ -193,7 +244,7 @@ namespace CTL
 		{
 			this->Standby = false;
 			this->Workers.notify_all();
-			for (auto& th : this->Threadpool)
+			for(auto& th : this->Threadpool)
 			{
 				th.join();
 			}
@@ -203,15 +254,15 @@ namespace CTL
 		{
 			std::lock_guard<std::mutex>(this->Queue); //Prevents acces from other threads
 			std::unique_lock<std::mutex> Lock(this->Sync);
-			this->Partitions.Push(Part(first, last));
+			this->Partitions.push(Part(first, last));
 			this->Workers.notify_one();
 			this->Controller.wait(Lock);
 		}
 
 	};
 
-	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar&) = HoarePartition<RAIterator, Compar>>
-	class ParallelQuickSort
+	template<typename RAIterator, typename Compar, RAIterator(*Partition)(RAIterator, RAIterator, Compar) = &HoarePartition<RAIterator, Compar>>
+	class ParallelQuickSortC
 	{
 	private:
 		using Part = Pair<RAIterator, RAIterator>;
@@ -230,7 +281,7 @@ namespace CTL
 			std::unique_lock<std::mutex> SortLock(this->Sync);
 			while(this->Standby)
 			{
-				if(this->Partitions.Empty())
+				if(this->Partitions.empty())
 				{
 					if(this->Working)
 					{
@@ -244,7 +295,8 @@ namespace CTL
 				}
 				else
 				{
-					auto partition = this->Partitions.Pop();
+					auto partition = this->Partitions.top();
+					this->Partitions.pop();
 					++this->Working;
 					SortLock.unlock();
 					RAIterator left = partition.GetFirst(), right = partition.GetSecond();
@@ -253,12 +305,12 @@ namespace CTL
 						auto p = Partition(left, right, this->Comp);
 						if(right - p < 1025)
 						{
-							QuickSort<RAIterator, Compar, Partition>(p + 1, right, this->Comp);
+							QuickSort<RAIterator, Compar, Partition>(p, right, this->Comp);
 						}
 						else
 						{
 							SortLock.lock();
-							this->Partitions.Push(Part(p + 1, right));
+							this->Partitions.push(Part(p, right));
 							SortLock.unlock();
 							this->Workers.notify_one();
 						}
@@ -272,18 +324,18 @@ namespace CTL
 		}
 
 	public:
-		ParallelQuickSort(unsigned int pool = std::thread::hardware_concurrency())
-		: Threadpool(pool), Working(0), Standby(true)
+		ParallelQuickSortC(unsigned int pool = std::thread::hardware_concurrency())
+			: Threadpool(pool), Working(0), Standby(true)
 		{
 			while(pool--)
 			{
-				this->Threadpool.PushBack(std::thread(&ParallelQuickSort::Worker, this));
+				this->Threadpool.push_back(std::thread(&ParallelQuickSortC::Worker, this));
 			}
 		}
 
-//		ParallelQuickSort(ParallelQuickSort<RAIterator,Compar,Partition>&& sort)
+		//		ParallelQuickSort(ParallelQuickSort<RAIterator,Compar,Partition>&& sort)
 
-		~ParallelQuickSort()
+		~ParallelQuickSortC()
 		{
 			this->Standby = false;
 			this->Workers.notify_all();
@@ -312,13 +364,12 @@ namespace CTL
 			this->Controller.wait(Lock);
 		}
 
-		void SetCompare(Compar comp)
+		void SetCompare(Compar c)
 		{
 			std::lock_guard<std::mutex>(this->Queue); //Prevents mid-sorting comparator change.
-
-			std::this->comp;
+			this->Comp=c;
 		}
 	};
 
-}
+} // !CTL
 #endif
