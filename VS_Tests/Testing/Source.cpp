@@ -1,25 +1,14 @@
-#define _SCL_SECURE_NO_WARNINGS
-#include "Test_Sort.hpp"
-
-#include <random>
-#include <functional>
-#include <algorithm>
-#include <CTL/Container/ctl_arraylist.hpp>
-#include <CTL/Utility/ctl_traits.hpp>
-#include <CTL/Sort/ctl_quick_sort.hpp>
-#include <Sort/ctl_heap_sort.hpp>
-#include <Sort/ctl_merge_sort.hpp>
-
-#include <forward_list>
-
-
-template class std::forward_list<int>;
-
-
+#include<CTL/ctl_tester.hpp>
+#include<CTL/Utility/ctl_singleton.hpp>
 
 int main()
 {
-//	test(CTL::HeapSort<int*>);
-	auto a = CTL::HeapSort<int*, std::greater<int>>;
-	testc(a);
+	using Test = CTL::ArcSingleton<Tester>;
+	
+	Test* a = new Test[50];
+
+	std::cout << Tester::count << ' ' << a[0].GetCount() << std::endl;
+	delete[] a;
+	std::cout << Tester::count << ' ' << a[0].GetCount() << std::endl;
+
 }

@@ -46,50 +46,50 @@ namespace CTL
 	class ArcSingleton
 	{
 	private:
+		using AS = ArcSingleton<T>;
+
 		T* instance;
 
-		static T* Manage(bool free)
+		static size_t Count(size_t c)
 		{
-			static T* singleton = nullptr;;
 			static size_t count = 0;
-			if(free)
-			{
-				--count;
-				if (count == 0)
-				{
-					delete singleton;
-				}
-			}
-			else
-			{
-				if (count == 0)
-				{
-					singleton = new T();
-				}
-				++count;
-			}
-			return singleton;
+			count += c;
+			return count;
 		}
 
-		static T* getInstance()
+		static T* Instance()
 		{
-			return ArcSingleton<T>::Manage(false);
+			static T* instance = nullptr;
+			if(Count(0) == 0) instance = new T();
+			return instance;
 		}
 
-		static void freeInstance()
+		void GetInstance()
 		{
-			ArcSingleton<T>::Manage(true);
+			this->instance = Instance();
+			Count(1);
+		}
+
+		void FreeInstance()
+		{
+			size_t uses = Count(-1);
+			if(uses == 0) delete this->instance;
 		}
 
 	public:
 		ArcSingleton()
 		{
-			this->instance = ArcSingleton<T>::getInstance();
+			this->GetInstance();
 		}
 
 		~ArcSingleton()
 		{
-			ArcSingleton<T>::freeInstance();
+			this->FreeInstance();
+		}
+
+		size_t GetCount() const
+		{
+			return Count(0);
 		}
 
 		T* operator->()
