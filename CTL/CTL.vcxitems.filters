@@ -10,6 +10,9 @@
     <Filter Include="Sort">
       <UniqueIdentifier>{97d437b8-31b3-446e-9628-fb546eadd466}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graph">
+      <UniqueIdentifier>{460bfaaa-00b6-4e0c-bef4-69ffa6304c6b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_makearray.hpp">
@@ -65,5 +68,8 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_pair.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_tester.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graph\Graph.hpp">
+      <Filter>Graph</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

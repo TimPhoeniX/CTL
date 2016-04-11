@@ -1,9 +1,10 @@
+
 /**
  * Conceptual Template Library by Piotr Grudzień
  * Simple ArrayList
  */
-#ifndef _CTL_ARRAYLIST_HPP_
-#define _CTL_ARRAYLIST_HPP_
+#ifndef CTL_ARRAYLIST_HPP
+#define CTL_ARRAYLIST_HPP
 
 #include <memory>
 #include <iostream>
@@ -29,9 +30,9 @@ namespace CTL
 		using const_iterator = const value_type*;
 
 	private:
-		pointer storage = nullptr;
 		size_type cSize = 0;
 		size_type cMaxSize = 1024;
+		pointer storage = nullptr;
 
 		void MoveBack(size_type begin)
 		{
@@ -61,14 +62,15 @@ namespace CTL
 		{}
 
 		explicit ArrayList(const Allocator& alloc):
-			Allocator(alloc)
+			Allocator(alloc),
+			storage(Alloc::allocate(*this,this->cMaxSize))
 		{}
 
 		ArrayList(size_type count, const T& value, const Allocator& alloc = Allocator()):
 			Allocator(alloc),
-			storage(Alloc::allocate(*this, count)),
 			cSize(count),
-			cMaxSize(count)
+			cMaxSize(count),
+			storage(Alloc::allocate(*this, count))
 		{
 			for(auto begin = this->storage, end = this->storage + count; begin != end; ++begin)
 			{
@@ -78,8 +80,8 @@ namespace CTL
 
 		ArrayList(size_type count, const Allocator& alloc = Allocator()):
 			Allocator(alloc),
-			storage(Alloc::allocate(*this, count)),
-			cMaxSize(count)
+			cMaxSize(count),
+			storage(Alloc::allocate(*this, count))
 		{}
 
 		ArrayList(const ArrayList& other):
@@ -162,6 +164,11 @@ namespace CTL
 		size_type max_size() const
 		{
 			return this->cMaxSize;
+		}
+
+		value_type& back()
+		{
+			return this->storage[this->cSize - 1];
 		}
 
 		void push_front(const value_type& e)

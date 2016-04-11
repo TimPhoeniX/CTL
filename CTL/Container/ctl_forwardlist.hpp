@@ -4,8 +4,8 @@
  * to be reworked (BaseNode,BaseNode optimal algorithms, Get rid of aligned_storage)
  */
 
-#ifndef _CTL_FORWARDLIST_HPP_
-#define _CTL_FORWARDLIST_HPP_
+#ifndef CTL_FORWARDLIST_HPP
+#define CTL_FORWARDLIST_HPP
 
 #include<memory>
 #include<iterator>

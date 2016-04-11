@@ -27,6 +27,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_virtual_disjointset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_pair.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_tester.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graph\Graph.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_heap_sort.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_merge_sort.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sort\ctl_quick_sort.hpp" />
