@@ -96,22 +96,27 @@ namespace CTL
 
 	private:
 
-//		static_assert(std::is_same<T, Container::value_type>::value, "Container does not store type T");
-		
-
-	public:
-		template<typename TestSize = Container>
-		typename std::enable_if<IsSizeEnabled<TestSize>::value,size_type>::type
-			size() const
+		template<typename TestSize>
+		typename std::enable_if<IsSizeEnabled<TestSize>::value, size_type>::type
+			getSize() const
 		{
 			return this->container.size();
 		}
 
-		template<typename TestSize = Container>
-		typename std::enable_if<!IsSizeEnabled<TestSize>::value,size_type>::type
-			size() const
+		template<typename TestSize>
+		typename std::enable_if<!IsSizeEnabled<TestSize>::value, size_type>::type
+			getSize() const
 		{
 			return std::distance(std::begin(this->container), std::end(this->container));
+		}
+
+//		static_assert(std::is_same<T, Container::value_type>::value, "Container does not store type T");
+		
+
+	public:
+		size_type size() const
+		{
+			return this->template getSize<Container>();
 		}
 
 		bool empty() const
