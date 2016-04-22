@@ -12,11 +12,11 @@
     <ClInclude Include="Tests\Test_Sort.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Tests\null.hpp">
-      <Filter>Tests</Filter>
-    </ClInclude>
     <ClInclude Include="Tests\test_traits.hpp" />
     <ClInclude Include="Tests\test_static_func.hpp">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Tests\Test_Null.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>
