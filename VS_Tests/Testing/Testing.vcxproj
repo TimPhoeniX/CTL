@@ -138,6 +138,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Tests\Test_ConstCall.hpp" />
     <ClInclude Include="Tests\Test_Null.hpp" />
     <ClInclude Include="Tests\test_static_func.hpp" />
     <ClInclude Include="Tests\Test_Sort.hpp" />

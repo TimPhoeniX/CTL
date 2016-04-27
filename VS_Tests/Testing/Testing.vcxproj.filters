@@ -19,5 +19,6 @@
     <ClInclude Include="Tests\Test_Null.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
+    <ClInclude Include="Tests\Test_ConstCall.hpp" />
   </ItemGroup>
 </Project>
