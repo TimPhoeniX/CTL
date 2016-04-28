@@ -4,7 +4,7 @@
 #include "../Container/ctl_arraylist.hpp"
 #include "../Container/ctl_stack.hpp"
 #include <queue> //TODO: Replace
-#include "ctl_pair.hpp"
+#include "../ctl_pair.hpp"
 
 namespace CTL
 {
@@ -19,12 +19,14 @@ namespace CTL
 	class Vertex
 	{
 	public:
-		using VertexList = ArrayList<Vertex<T>*>;
-		using VertexType = Vertex<T>;
+	//	using VertexList = ArrayList<Vertex*>;
+		using VertexList = std::vector<Vertex*>;
+		using VertexType = Vertex;
 
 	private:
 		T label;
-		size_t distance = 0;
+		long distance = 0;
+		long d =0, f = 0;
 		VertexState state = VertexState::White;
 		VertexType* parent = nullptr;
 		VertexList vList;
@@ -43,12 +45,22 @@ namespace CTL
 			return this->label;
 		}
 
-		size_t Distance()
+		long Distance()
 		{
 			return this->distance;
 		}
-
-		VertexState State()
+		
+		long D()
+		{
+			return this->d;
+		}
+		
+		long F()
+		{
+			return this->f;
+		}
+		
+		VertexState State() const
 		{
 			return this->state;
 		}
@@ -63,11 +75,21 @@ namespace CTL
 			this->label = label;
 		}
 		
-		void SetDistance(const size_t dist)
+		void SetDistance(const long dist)
 		{
 			this->distance = dist;
 		}
 
+		void SetD(const long d)
+		{
+			this->d=d;
+		}
+		
+		void SetF(const long f)
+		{
+			this->f=f;
+		}
+		
 		void SetState(VertexState state)
 		{
 			this->state = state;
@@ -90,7 +112,7 @@ namespace CTL
 
 		void Reset()
 		{
-			this->distance = 0;
+			this->distance = -1;
 			this->parent = nullptr;
 			this->state = VertexState::White;
 		}
@@ -104,8 +126,11 @@ namespace CTL
 
 		void AddEdge(VertexType* a, VertexType* b)
 		{
-			a->AddVertex(b);
-			b->AddVertex(a);
+			if(a&&b)
+			{
+				a->AddVertex(b);
+				b->AddVertex(a);
+			}
 		}
 	};
 
@@ -117,10 +142,8 @@ namespace CTL
 
 		void AddEdge(VertexType* a, VertexType* b)
 		{
-			a->AddVertex(b);
+			if(a&&b) a->AddVertex(b);
 		}
-
-
 	};
 
 
@@ -129,12 +152,13 @@ namespace CTL
 	{
 	public:
 		using VertexType = Vertex<T>;
-		using GraphType = ArrayList<VertexType*>;
+//		using GraphType = ArrayList<VertexType*>;
+		using GraphType = std::vector<VertexType*>;
 		using iterator = typename GraphType::iterator;
 
 	private:
 		GraphType graph;
-
+		long DFSTime = 0;
 	public:
 		iterator begin()
 		{
@@ -169,6 +193,7 @@ namespace CTL
 			//TODO: Implement Queue Adapter;
 			std::queue<VertexType*> queue;
 			queue.push(begin);
+			begin->SetDistance(0);
 			begin->SetState(VertexState::Gray);
 			while (!queue.empty())
 			{
@@ -188,12 +213,24 @@ namespace CTL
 			}
 		}
 
-		void DFS(VertexType* begin)
+		void DFS()
 		{
 			for (auto v : this->graph)
 			{
 				v->Reset();
 			}
+			this->DFSTime=0;
+			for(auto v : this->graph)
+			{
+				if(v->State()==VertexState::White)
+				{
+					this->DFSVisit(v);
+				}
+			}
+		}
+		
+		void IterativeDFS()
+		{
 			Stack<VertexType*,ArrayList<VertexType*>> stack;
 			stack.push(begin);
 			{
@@ -206,14 +243,32 @@ namespace CTL
 					{
 						if (v->State() == VertexState::White)
 						{
-							stack.push(v);
 							v->SetParent(vert);
 							v->SetDistance(vert->Distance() + 1);
+							stack.push(v);
 						}
 					}
 					vert->SetState(VertexState::Black);
 				}
 			}
+		}
+		
+		void DFSVisit(VertexType* v)
+		{
+			++this->DFSTime;
+			v->SetD(this->DFSTime);
+			v->SetState(VertexState::Gray);
+			for(auto u : v->Adjacent())
+			{
+				if(u->State()==VertexState::White)
+				{
+					u->SetParent(v);
+					this->DFSVisit(u);
+				}
+			}
+			v->SetState(VertexState::Black);
+			++this->DFSTime;
+			v->SetF(this->DFSTime);
 		}
 
 		template<typename os>
@@ -229,6 +284,17 @@ namespace CTL
 			}
 			return this->PrintPath<os>(begin, end->Parent(), stream) << "<- " << end->Label() << ' ';
 		}
+		
+		
+		
+		Graph StronglyConnectedComponents();
+		//{
+		//	this->DFS();
+		//	Graph inverted = this->Inverted();
+		//	//Sort descending by f;
+		//	inverted.DFS();
+		//	return inverted;
+		//}
 	};
 }
 #endif // !CTL_GRAPH
