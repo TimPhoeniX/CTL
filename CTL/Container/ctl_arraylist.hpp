@@ -90,7 +90,7 @@ namespace CTL
 			cSize(other.cSize),
 			cMaxSize(other.cMaxSize)
 		{
-			for(auto a = this->storage, b = other.storage, end = other.storage + other.cMaxSize; b != end; ++a, ++b)
+			for(auto a = this->storage, b = other.storage, end = other.storage + other.cSize; b != end; ++a, ++b)
 			{
 				Alloc::construct(*this, a, *b);
 			}
@@ -109,7 +109,7 @@ namespace CTL
 
 		~ArrayList()
 		{
-			for(auto ptr = this->storage, end = this->storage + this->cMaxSize; ptr != end; ++ptr)
+			for(auto ptr = this->storage, end = this->storage + this->cSize; ptr != end; ++ptr)
 			{
 				Alloc::destroy(*this, ptr);
 			}
@@ -194,6 +194,20 @@ namespace CTL
 			if(this->cSize < this->cMaxSize)
 			{
 				Alloc::construct(*this, this->storage + (cSize++), e);
+			}
+			else
+			{
+				pointer to =  Alloc::allocate(*this, 2 * this->cMaxSize);
+				pointer newStorage = to;
+				pointer oldStorage = this->storage;
+				for(size_type i = 0; i < cMaxSize; ++i)
+				{
+					Alloc::construct(*this, newStorage++, std::move(*oldStorage));
+					Alloc::destroy(*this, oldStorage++);
+				}
+				Alloc::deallocate(*this, this->storage, this->cMaxSize);
+				this->storage = newStorage;
+				this->cMaxSize *= 2;
 			}
 		}
 
