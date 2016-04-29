@@ -1,7 +1,7 @@
-CPPFLAGS= -std=c++11 -Wall -Wextra
-CC = g++
-Name = test.exe
-Sources= StackTest.cpp
+CPPFLAGS=-std=c++11 -Wall -Wextra -O3
+CC=g++
+Name=wiki.exe
+Sources=wiki.cpp
 Headers= 
 
 .PHONY: default run clean tar

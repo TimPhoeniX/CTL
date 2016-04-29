@@ -19,8 +19,8 @@ namespace CTL
 	class Vertex
 	{
 	public:
-	//	using VertexList = ArrayList<Vertex*>;
-		using VertexList = std::vector<Vertex*>;
+		using VertexList = ArrayList<Vertex*>;
+//		using VertexList = std::vector<Vertex*>;
 		using VertexType = Vertex;
 
 	private:
@@ -29,7 +29,7 @@ namespace CTL
 		long d =0, f = 0;
 		VertexState state = VertexState::White;
 		VertexType* parent = nullptr;
-		VertexList vList;
+		VertexList vList = VertexList(8);
 
 	public:
 		Vertex() : Vertex(T())
@@ -152,14 +152,22 @@ namespace CTL
 	{
 	public:
 		using VertexType = Vertex<T>;
-//		using GraphType = ArrayList<VertexType*>;
-		using GraphType = std::vector<VertexType*>;
+		using GraphType = ArrayList<VertexType*>;
+//		using GraphType = std::vector<VertexType*>;
 		using iterator = typename GraphType::iterator;
 
 	private:
 		GraphType graph;
 		long DFSTime = 0;
 	public:
+		~Graph()
+		{
+			for(auto it = graph.begin(), end = graph.end(); it!=end; ++it)
+			{
+				delete *it;
+			}
+		}
+		
 		iterator begin()
 		{
 			return this->graph.begin();
@@ -219,7 +227,7 @@ namespace CTL
 			{
 				v->Reset();
 			}
-			this->DFSTime=0;
+			this->DFSTime=1;
 			for(auto v : this->graph)
 			{
 				if(v->State()==VertexState::White)
@@ -229,34 +237,46 @@ namespace CTL
 			}
 		}
 		
+		//Test it
 		void IterativeDFS()
 		{
 			Stack<VertexType*,ArrayList<VertexType*>> stack;
-			stack.push(begin);
+			this->DFSTime=1;
+			for(auto v : this->graph)
 			{
-				while (!stack.empty())
+				v->Reset();
+			}
+			for(auto v : this->graph)
+			{
+				if(v->VertexState()==VertexState::White)
 				{
-					auto vert = stack.top();
-					stack.pop();
-					vert->SetState(VertexState::Gray);
-					for (auto v : vert->Adjacent())
+					v->setState(VertexState::Gray);
+					v->setD(this->DFSTime++);
+					stack.push(*v);
+					while(!stack.empty())
 					{
-						if (v->State() == VertexState::White)
+						auto u = stack.top();
+						stack.pop();
+						for(auto w : u->Adjacent())
 						{
-							v->SetParent(vert);
-							v->SetDistance(vert->Distance() + 1);
-							stack.push(v);
+							if(w->VertexState()==VertexState::White)
+							{
+								w->setState(VertexState::Gray);
+								w->setD(this->DFSTime++);
+								w->setParent(*u);
+								stack.push(*w);
+							}
 						}
+						u->setState(VertexState::Black);
+						u->setF(this->DFSTime++);
 					}
-					vert->SetState(VertexState::Black);
 				}
 			}
 		}
 		
 		void DFSVisit(VertexType* v)
 		{
-			++this->DFSTime;
-			v->SetD(this->DFSTime);
+			v->SetD(this->DFSTime++);
 			v->SetState(VertexState::Gray);
 			for(auto u : v->Adjacent())
 			{
@@ -267,8 +287,7 @@ namespace CTL
 				}
 			}
 			v->SetState(VertexState::Black);
-			++this->DFSTime;
-			v->SetF(this->DFSTime);
+			v->SetF(this->DFSTime++);
 		}
 
 		template<typename os>

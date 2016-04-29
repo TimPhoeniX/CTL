@@ -7,9 +7,11 @@
 
 #ifdef _WIN32
 #define MYLOCALE "Polish_Poland.1250"
+#define WIKI "C:/plwiki.txt"
 #include <windows.h>
 #else
-#define MYLOCALE "pl.UTF-8"
+#define MYLOCALE "pl_PL.UTF-8"
+#define WIKI "plwiki.txt"
 #endif
 
 using Graph = CTL::Graph<std::string,CTL::Directed<std::string>>;
@@ -36,14 +38,15 @@ void PopulateEdges(Graph& g, std::istream& in)
 	{
 		if(site.front()==' ')
 		{
-			auto l = site.find_first_not_of(" ");
-			std::string newsite = site.substr(l,site.size()-l);
-			to = g.FindVertex(newsite);
+			site.erase(0,2);
+			to = g.FindVertex(site);
+//			std::cout << site << std::endl;
 			g.AddEdge(v, to);
 		}
 		else
 		{
 			v = g.FindVertex(site);
+			std::cout << "Now "+site << std::endl;
 		}
 	}
 }
@@ -67,7 +70,7 @@ int main()
 #else
 #endif
 
-	std::ifstream data("C:/plwiki.txt");
+	std::ifstream data(WIKI);
 	data.imbue(PL);
 	Graph g;
 	PopulateVertices(g, data);

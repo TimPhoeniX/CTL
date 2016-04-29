@@ -98,9 +98,9 @@ namespace CTL
 
 		ArrayList(ArrayList<value_type>&& l):
 			Allocator(std::move(l)),
-			storage(l.storage),
 			cSize(l.cSize),
-			cMaxSize(l.cMaxSize)
+			cMaxSize(l.cMaxSize),
+			storage(l.storage)
 		{
 			l.storage = nullptr;
 			l.cSize = 0;
@@ -109,10 +109,7 @@ namespace CTL
 
 		~ArrayList()
 		{
-			for(auto ptr = this->storage, end = this->storage + this->cSize; ptr != end; ++ptr)
-			{
-				Alloc::destroy(*this, ptr);
-			}
+			this->clear();
 			Alloc::deallocate(*this, this->storage, this->cMaxSize);
 		}
 
@@ -206,7 +203,7 @@ namespace CTL
 					Alloc::destroy(*this, oldStorage++);
 				}
 				Alloc::deallocate(*this, this->storage, this->cMaxSize);
-				this->storage = newStorage;
+				this->storage = to;
 				this->cMaxSize *= 2;
 			}
 		}
@@ -292,7 +289,7 @@ namespace CTL
 
 		void clear()
 		{
-			for(auto ptr = this->storage, end = this->storage + this->cMaxSize; ptr != end; ++ptr)
+			for(auto ptr = this->begin(), end = this->end(); ptr != end; ++ptr)
 			{
 				Alloc::destroy(*this, ptr);
 			}
