@@ -153,6 +153,22 @@ namespace CTL
 			return this->cSize == 0;
 		}
 
+		void reserve(const size_type newSize)
+		{
+			if(newSize <= this->cMaxSize) return;
+			pointer to = Alloc::allocate(*this, newSize);
+			pointer newStorage = to;
+			pointer oldStorage = this->storage;
+			for(size_type i = 0; i < this->cSize; ++i)
+			{
+				Alloc::construct(*this, newStorage++, std::move(*oldStorage));
+				Alloc::destroy(*this, oldStorage++);
+			}
+			Alloc::deallocate(*this, this->storage, this->cMaxSize);
+			this->storage = to;
+			this->cMaxSize = newSize;
+		}
+
 		size_type size() const
 		{
 			return this->cSize;
@@ -188,24 +204,11 @@ namespace CTL
 
 		void push_back(const value_type& e)
 		{
-			if(this->cSize < this->cMaxSize)
+			if(this->cSize == this->cMaxSize)
 			{
-				Alloc::construct(*this, this->storage + (cSize++), e);
+				this->reserve(2 * this->cMaxSize);
 			}
-			else
-			{
-				pointer to =  Alloc::allocate(*this, 2 * this->cMaxSize);
-				pointer newStorage = to;
-				pointer oldStorage = this->storage;
-				for(size_type i = 0; i < cMaxSize; ++i)
-				{
-					Alloc::construct(*this, newStorage++, std::move(*oldStorage));
-					Alloc::destroy(*this, oldStorage++);
-				}
-				Alloc::deallocate(*this, this->storage, this->cMaxSize);
-				this->storage = to;
-				this->cMaxSize *= 2;
-			}
+			Alloc::construct(*this, this->storage + (cSize++), e);
 		}
 
 		void push_back(value_type&& e)

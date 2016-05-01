@@ -15,7 +15,8 @@
 #define WIKI "plwiki.txt"
 #endif
 
-//#define FASTLOAD
+
+#define FASTLOAD
 
 using Graph = CTL::Graph<std::string,CTL::Directed<std::string>>;
 using Vertex = CTL::Vertex<std::string>;
@@ -44,6 +45,7 @@ void PopulateVertices(Graph& g, std::istream& in)
 
 void PopulateEdges(Graph& g, std::istream& in)
 {
+	std::locale PL(MYLOCALE);
 	bool debug = false;
 	std::string site = "";
 	std::getline(in, site);
@@ -64,7 +66,7 @@ void PopulateEdges(Graph& g, std::istream& in)
 			}
 			else
 			{
-				site.front()=char(std::toupper(site.front(),std::locale(MYLOCALE)));
+				site.front()=char(std::toupper(site.front(),PL));
 //				if(debug) std::cout << site << ' ' << v->Label() << std::endl;
 				it = map.find(site);
 				if(it!=map.end())
@@ -78,13 +80,18 @@ void PopulateEdges(Graph& g, std::istream& in)
 			to = g.FindVertex(site);
 #endif
 //			std::cout << site << std::endl;
-			if(debug) std::cout << "Adding "+to->Label()+" to "+v->Label() << std::endl;
+//			if(debug) std::cout << "Adding "+to->Label()+" to "+v->Label() << std::endl;
 			g.AddEdge(v, to);
 		}
 		else
 		{
 			debug = false;
-			if(site=="Nyan Cat") debug = true;
+			if(site=="Nyan Cat")
+			{
+				debug = true;
+				std::cout << site << std::endl;
+			}
+				
 #if defined(FASTLOAD)
 //			std::cout << "Loading " << site << std::endl;
 			auto it = map.find(site);
@@ -117,10 +124,8 @@ int main()
 {
 //	std::cout << FASTLOAD << std::endl;
 #if defined(FASTLOAD)
-#warning Fast Loading is ON
 	std::cout << "Fast Version" << std::endl;
 #else
-#warning Fast Loading is OFF
 	std::cout << "Slow Version" << std::endl;
 #endif
 	
