@@ -4,6 +4,7 @@
 #include <locale>
 #include "CTL/Graph/Graph.hpp"
 #include <functional>
+#include <cctype>
 
 #ifdef _WIN32
 #define MYLOCALE "Polish_Poland.1250"
@@ -14,8 +15,17 @@
 #define WIKI "plwiki.txt"
 #endif
 
+//#define FASTLOAD
+
 using Graph = CTL::Graph<std::string,CTL::Directed<std::string>>;
 using Vertex = CTL::Vertex<std::string>;
+
+#if defined(FASTLOAD)
+
+#include <unordered_map>
+std::unordered_map<std::string,Vertex*> map;
+
+#endif
 
 void PopulateVertices(Graph& g, std::istream& in)
 {
@@ -24,29 +34,71 @@ void PopulateVertices(Graph& g, std::istream& in)
 	{
 		if(site.front() == ' ') continue;
 //		std::cout << "Read: " << site << std::endl;
-		g.AddVertex(new Vertex(site));
+		Vertex* v = new Vertex(site);
+#if defined(FASTLOAD)
+		map.insert(make_pair(site,v));
+#endif
+		g.AddVertex(v);
 	}
 }
 
 void PopulateEdges(Graph& g, std::istream& in)
 {
+	bool debug = false;
 	std::string site = "";
 	std::getline(in, site);
 	Vertex* v = g.FindVertex(site);
 	Vertex* to = nullptr;
 	while(std::getline(in, site) && !site.empty())
 	{
+		
 		if(site.front()==' ')
 		{
 			site.erase(0,2);
+			if(debug) std::cout << v->Label()+" leads to "+site << std::endl;
+#if defined(FASTLOAD)
+			auto it = map.find(site);
+			if(it!=map.end())
+			{
+				to = it->second;
+			}
+			else
+			{
+				site.front()=char(std::toupper(site.front(),std::locale(MYLOCALE)));
+//				if(debug) std::cout << site << ' ' << v->Label() << std::endl;
+				it = map.find(site);
+				if(it!=map.end())
+				{
+//					if(debug) std::cout << it->first << std::endl;
+					to = it->second;
+				}
+				else to = nullptr;
+			}
+#else
 			to = g.FindVertex(site);
+#endif
 //			std::cout << site << std::endl;
+			if(debug) std::cout << "Adding "+to->Label()+" to "+v->Label() << std::endl;
 			g.AddEdge(v, to);
 		}
 		else
 		{
+			debug = false;
+			if(site=="Nyan Cat") debug = true;
+#if defined(FASTLOAD)
+//			std::cout << "Loading " << site << std::endl;
+			auto it = map.find(site);
+			if(it!=map.end())
+			{
+				v = it->second;
+			}
+			else
+			{
+				v = nullptr;
+			}
+#else
 			v = g.FindVertex(site);
-			std::cout << "Now "+site << std::endl;
+#endif
 		}
 	}
 }
@@ -57,18 +109,24 @@ void printv(Vertex* vert)
 	{
 		printv(vert->Parent());
 	}
-	std::cout << '[' << vert->Distance() << "] " << vert->Label() << std::endl;
+	if(vert->Distance() == -1) std::cout << "No Path" << std::endl;
+	else std::cout << '[' << vert->Distance() << "] " << vert->Label() << std::endl;
 };
 
 int main()
 {
+//	std::cout << FASTLOAD << std::endl;
+#if defined(FASTLOAD)
+#warning Fast Loading is ON
+	std::cout << "Fast Version" << std::endl;
+#else
+#warning Fast Loading is OFF
+	std::cout << "Slow Version" << std::endl;
+#endif
+	
 	std::locale PL(MYLOCALE);
 	std::locale::global(PL);
 	std::cout.imbue(PL);
-#ifdef _WIN32
-	SetConsoleOutputCP(CP_UTF8);
-#else
-#endif
 
 	std::ifstream data(WIKI);
 	data.imbue(PL);
@@ -106,6 +164,15 @@ int main()
 
 		while(std::getline(std::cin, to) && !to.empty())
 		{
+			if(to=="Adjacent")
+			{
+				for(auto edge : v->Adjacent())
+				{
+					std::cout << edge->Label() << std::endl;
+				}
+				continue;
+			}
+			
 			vto = g.FindVertex(to);
 			if(vto == nullptr)
 			{
@@ -116,6 +183,8 @@ int main()
 			std::cout << "No of Jupms: " << vto->Distance() << std::endl;
 
 			printv(vto);
+			
+			std::cout << "To Where?" << std::endl;
 		}
 	}
 }
