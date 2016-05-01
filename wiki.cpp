@@ -5,8 +5,12 @@
 #include "CTL/Graph/Graph.hpp"
 #include <functional>
 #include <cctype>
+#include <random>
+#include <chrono>
+#include <functional>
 
 #ifdef _WIN32
+#define FASTLOAD
 #define MYLOCALE "Polish_Poland.1250"
 #define WIKI "C:/plwiki.txt"
 #include <windows.h>
@@ -15,8 +19,6 @@
 #define WIKI "plwiki.txt"
 #endif
 
-
-#define FASTLOAD
 
 using Graph = CTL::Graph<std::string,CTL::Directed<std::string>>;
 using Vertex = CTL::Vertex<std::string>;
@@ -116,7 +118,7 @@ void printv(Vertex* vert)
 	{
 		printv(vert->Parent());
 	}
-	if(vert->Distance() == -1) std::cout << "No Path" << std::endl;
+	if(vert->Distance() == -1) std::cout << "No Path to "+vert->Label() << std::endl;
 	else std::cout << '[' << vert->Distance() << "] " << vert->Label() << std::endl;
 };
 
@@ -128,7 +130,7 @@ int main()
 #else
 	std::cout << "Slow Version" << std::endl;
 #endif
-	
+
 	std::locale PL(MYLOCALE);
 	std::locale::global(PL);
 	std::cout.imbue(PL);
@@ -142,6 +144,10 @@ int main()
 	PopulateEdges(g, data);
 	data.close();
 
+	std::random_device seeder;
+	std::default_random_engine def(seeder());
+	std::uniform_int_distribution<> verts(0,map.size());
+	std::function<int()> limit = std::bind(verts,def);
 	std::string from, to;
 	Vertex* v = nullptr, *vto = nullptr;
 
@@ -177,13 +183,33 @@ int main()
 				}
 				continue;
 			}
-			
-			vto = g.FindVertex(to);
-			if(vto == nullptr)
+			if(to=="Longest")
 			{
-				std::cout << "404: Site not found: " << '|' << to << '|' << std::endl;
-				std::cout << "To Where?" << std::endl;
-				continue;
+				int max = 0;
+				for(auto& i : map)
+				{
+					if(i.second->Distance()>max)
+					{
+						vto = i.second;
+						max = vto->Distance();
+					}
+				}
+			}
+			else if(to=="Random")
+			{
+				auto rnd = map.begin();
+				std::advance(rnd, limit() );
+				vto = rnd->second;
+			}
+			else
+			{
+				vto = g.FindVertex(to);
+				if(vto == nullptr)
+				{
+					std::cout << "404: Site not found: " << '|' << to << '|' << std::endl;
+					std::cout << "To Where?" << std::endl;
+					continue;
+				}
 			}
 			std::cout << "No of Jupms: " << vto->Distance() << std::endl;
 

@@ -168,6 +168,11 @@ namespace CTL
 			}
 		}
 		
+		size_t VertexCount()
+		{
+			return this->graph.size();
+		}
+		
 		iterator begin()
 		{
 			return this->graph.begin();

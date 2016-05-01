@@ -3,8 +3,10 @@ CC=g++
 Name=wiki.exe
 Sources=wiki.cpp
 Headers=CTL/Container/ctl_arraylist.hpp CTL/Graph/Graph.hpp
+Extra=Sample
+Files=$(Sources) $(Headers) $(Extra)
 
-.PHONY: default run clean tar Fast
+.PHONY: default run clean tar
 
 default: $(Name)
 
