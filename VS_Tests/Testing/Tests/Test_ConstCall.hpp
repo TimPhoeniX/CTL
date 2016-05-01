@@ -1,5 +1,6 @@
 #ifndef TEST_CONSTCALL_HPP
 #define TEST_CONSTCALL_HPP
+#include <iostream>
 
 class TEST_CONSTCALL
 {
