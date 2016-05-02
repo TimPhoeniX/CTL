@@ -87,13 +87,8 @@ void PopulateEdges(Graph& g, std::istream& in)
 		}
 		else
 		{
-			debug = false;
-			if(site=="Nyan Cat")
-			{
-				debug = true;
-				std::cout << site << std::endl;
-			}
-				
+//			debug = false;
+//			if(site=="Nyan Cat") debug = true;
 #if defined(FASTLOAD)
 //			std::cout << "Loading " << site << std::endl;
 			auto it = map.find(site);
@@ -136,6 +131,11 @@ int main()
 	std::cout.imbue(PL);
 
 	std::ifstream data(WIKI);
+	if(!data.is_open())
+	{
+		std::cerr << WIKI << " could not be opened" << std::endl;
+		std::exit(-1);
+	}
 	data.imbue(PL);
 	Graph g;
 	PopulateVertices(g, data);
@@ -153,7 +153,7 @@ int main()
 
 	while(true)
 	{
-		std::cout << "Start from Where?" << std::endl;
+		std::cout << "\nStart from Where?" << std::endl;
 		std::getline(std::cin, from);
 		if(from.empty())
 		{
@@ -168,7 +168,7 @@ int main()
 			continue;
 		}
 
-		std::cout << "Wait while we prepare the graph for you" << std::endl;
+		std::cout << "Wait while we prepare the graph for: "+from << std::endl;
 		g.BFS(v);
 
 		std::cout << "To Where?" << std::endl;
@@ -190,10 +190,18 @@ int main()
 				{
 					if(i.second->Distance()>max)
 					{
-						vto = i.second;
-						max = vto->Distance();
+						max = i.second->Distance();
 					}
 				}
+				for(auto& i : map)
+				{
+					if(i.second->Distance()==max)
+					{
+						printv(i.second);
+						std::cout << std::endl;
+					}
+				}
+				continue;
 			}
 			else if(to=="Random")
 			{
@@ -215,7 +223,7 @@ int main()
 
 			printv(vto);
 			
-			std::cout << "To Where?" << std::endl;
+			std::cout << "\nTo Where?" << std::endl;
 		}
 	}
 }
