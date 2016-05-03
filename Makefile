@@ -3,7 +3,7 @@ CC=g++
 Name=wiki.exe
 Sources=wiki.cpp
 Headers=CTL/Container/ctl_arraylist.hpp CTL/Graph/Graph.hpp CTL/ctl_pair.hpp CTL/Container/ctl_stack.hpp CTL/Utility/ctl_traits.hpp
-Extra=Sample SampleResult Makefile
+Extra=Sample.txt SampleResult.txt Makefile
 Files=$(Sources) $(Headers) $(Extra)
 
 .PHONY: default run clean tar Sample
@@ -21,7 +21,10 @@ clean:
 	rm -rf *.exe
 
 sample: $(Name)
-	./$< < Sample > SampleResult
+	./$< < Sample.txt > SampleResult.txt
 	
 tar: $(Files)
-	tar -czvf grudzienaisd-2.tar.gz $(Files)
+	mkdir Wiki
+	cp --parent $(Files) Wiki
+	tar -czvf AiSD2-2-PiotrGrudzien.tar.gz Wiki
+	rm -rf Wiki
