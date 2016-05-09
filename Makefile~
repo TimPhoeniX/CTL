@@ -1,9 +1,9 @@
-CPPFLAGS=-std=c++11 -Wall -Wextra
+CPPFLAGS=-std=c++11 -Wall -Wextra -O3
 CC=g++
-Name=test.exe
-Sources=test.cpp
-Headers=
-Extra=Makefile
+Name=wiki.exe
+Sources=wiki.cpp
+Headers=CTL/Container/ctl_arraylist.hpp CTL/Graph/Graph.hpp CTL/ctl_pair.hpp CTL/Container/ctl_stack.hpp CTL/Utility/ctl_traits.hpp
+Extra=Sample.txt SampleResult.txt Makefile
 Files=$(Sources) $(Headers) $(Extra)
 
 .PHONY: default run clean tar Sample
@@ -20,8 +20,11 @@ clean:
 	rm -rf *~
 	rm -rf *.exe
 
+sample: $(Name)
+	./$< < Sample.txt > SampleResult.txt
+	
 tar: $(Files)
-	mkdir Test
+	mkdir Wiki
 	cp --parent $(Files) Wiki
 	tar -czvf AiSD2-2-PiotrGrudzien.tar.gz Wiki
 	rm -rf Wiki

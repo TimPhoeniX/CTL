@@ -1,31 +1,13 @@
-#include "Graph.hpp"
+//#include "Graph.hpp"
 #include <iostream>
 #include <string>
-
-template class Vertex<std::string>;
-template class Graph<std::string>;
+#include <limits>
 
 int main()
 {
-	Vertex<std::string> A("A");
-	Vertex<std::string> B("B");
-	
-	std::cout << "Graph" << std::endl;
-	Graph<std::string> G;
-	
-	std::cout << "adding edge" << std::endl;
-	A.AddEdge(&B);
-	
-	std::cout << "Adding Vertex" << std::endl;
-	G.AddVertex(&A);
-	G.AddVertex(&B);
-	
-	std::cout << "Graph" << std::endl;
-	
-	for(auto& v : G)
-	{
-		std::cout << v->getLabel() << std::endl;
-	}
-	
+	double a = std::numeric_limits<double>::max();
+	double b = std::numeric_limits<double>::infinity();
+	double c = b+1;
+	std::cout << (a < c? "OK":"Overflow")<<std::endl; 
 	return 0;
 }

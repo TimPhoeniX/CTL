@@ -368,7 +368,7 @@ namespace CTL
 // 				s.insert(u);
 // 				for(auto v : u->Adjacent())
 // 					this->Relax(u,v);
-//				q.pop();
+				q.pop();
 // 			}
 // 		}
 	};
