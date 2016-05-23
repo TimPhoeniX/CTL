@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="..\..\wiki.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">
@@ -13,13 +12,17 @@
     <ClInclude Include="Tests\Test_Sort.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Tests\test_traits.hpp" />
     <ClInclude Include="Tests\test_static_func.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Tests\Test_Null.hpp">
       <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Tests\Test_ConstCall.hpp" />
+    <ClInclude Include="Tests\test_traits.hpp">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Tests\Test_ConstCall.hpp">
+      <Filter>Tests</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
