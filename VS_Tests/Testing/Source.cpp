@@ -29,7 +29,7 @@ int main()
 
 	for (size_t j = 0; j < 1; ++j)
 	{
-		g.DFS(vs + j);
+		g.DFS();
 		for (int i = 0; i < 10; ++i)
 		{
 			g.PrintPath(vs + j, vs + i, std::cout) << std::endl;

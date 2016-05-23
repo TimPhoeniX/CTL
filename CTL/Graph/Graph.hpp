@@ -85,7 +85,7 @@ namespace CTL
 		{
 		}
 
-		explicit Vertex(T& label) :
+		explicit Vertex(const T& label) :
 			label(label)
 		{}
 
@@ -208,6 +208,11 @@ namespace CTL
 		void AddEdge(VertexType* a, VertexType* b)
 		{
 			if(a&&b) a->AddVertex(b);
+		}
+
+		void AddEdge(VertexType* a, VertexType* b, double weight)
+		{
+			if (a&&b) a->AddVertex(b, weight);
 		}
 	};
 

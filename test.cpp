@@ -13,14 +13,14 @@ int main()
 	for(unsigned int i = 0; i < V; ++i)
 	{
 		std::cin >> a;
-		g.addVertex(a);
+		g.AddVertex(a);
 	}
 	std::cin >> V;
 	double w = 0.;
 	for(unsigned int i = 0; i < V; ++i)
 	{
 		std::cin >> a >> b >> w;
-		g.addEdge(g.FindVertex(a),g.FindVertex(b), w);
+		g.AddEdge(g.FindVertex(a),g.FindVertex(b), w);
 	}
 	auto paths = g.FloydWarshall();
 	V = g.VertexCount();
