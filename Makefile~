@@ -14,7 +14,7 @@ $(Name): $(Sources) $(Headers)
 	$(CC) -o $@ $(Sources) $(CPPFLAGS) -DFASTLOAD
 
 run: $(Name)
-	./$< < test0.txt > mineout.txt
+	./$< < test0.txt
 	
 clean:
 	rm -rf *~

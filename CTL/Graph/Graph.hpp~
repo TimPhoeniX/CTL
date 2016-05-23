@@ -4,6 +4,7 @@
 #include "../Container/ctl_arraylist.hpp"
 #include "../Container/ctl_stack.hpp"
 #include <queue> //TODO: Replace
+#include <unordered_map>
 #include "../ctl_pair.hpp"
 
 namespace CTL
@@ -14,17 +15,65 @@ namespace CTL
 		Gray,
 		Black
 	};
-
+	
+	template<typename T>
+	class Vertex;
+	
+	template<typename T>
+	class PartialEdge
+	{
+	protected:
+		using VertexType = Vertex<T>;
+		
+		VertexType* to = nullptr;
+		double weight = 1;
+	public:
+		PartialEdge(VertexType* to) : to(to) {}
+		PartialEdge(VertexType* to, double weight) : to(to), weight(weight) {}
+		
+		
+		VertexType* getTo()
+		{
+			return this->to;
+		}
+		
+		double getWeight()
+		{
+			return this->weight;
+		}
+	};
+	
+	
+	template<typename T>
+	class Edge : public PartialEdge<T>
+	{
+	protected:
+		using VertexType = typename PartialEdge<T>::VertexType;
+		
+		VertexType* from = nullptr;
+	public:
+		Edge(VertexType* from, VertexType* to) : PartialEdge<T>(to), from(from) {}
+		Edge(VertexType* from, VertexType* to, double weight) : PartialEdge<T>(to,weight), from(from) {}
+		
+		
+		VertexType* getFrom()
+		{
+			return this->from;
+		}
+		
+		
+	};
+	
 	template<typename T>
 	class Vertex
 	{
 	public:
-		using VertexList = ArrayList<Vertex*>;
+		using VertexList = ArrayList<PartialEdge<T>>;
 //		using VertexList = std::vector<Vertex*>;
 		using VertexType = Vertex;
 
 	private:
-		T label;
+ 		T label;
 		double distance = 0;
 		long d =0, f = 0;
 		VertexState state = VertexState::White;
@@ -36,7 +85,7 @@ namespace CTL
 		{
 		}
 
-		explicit Vertex(const T& label) :
+		explicit Vertex(T& label) :
 			label(label)
 		{}
 
@@ -107,12 +156,17 @@ namespace CTL
 
 		void AddVertex(VertexType* vertex)
 		{
-			this->vList.push_back(vertex);
+			this->vList.push_back(PartialEdge<T>(vertex));
+		}
+		
+		void AddVertex(VertexType* vertex, double weight)
+		{
+			this->vList.push_back(PartialEdge<T>(vertex,weight));
 		}
 
 		void Reset()
 		{
-			this->distance = std:numeric_limits<double>::infinity();
+			this->distance = std::numeric_limits<double>::infinity();
 			this->d = 0;
 			this->f = 0;
 			this->parent = nullptr;
@@ -132,6 +186,15 @@ namespace CTL
 			{
 				a->AddVertex(b);
 				b->AddVertex(a);
+			}
+		}
+		
+		void AddEdge(VertexType* a, VertexType* b, double weight)
+		{
+			if(a&&b)
+			{
+				a->AddVertex(b,weight);
+				b->AddVertex(a,weight);
 			}
 		}
 	};
@@ -164,7 +227,7 @@ namespace CTL
 		GraphType graph;
 		long DFSTime = 0;
 		
-		initialize(VertexType* v)
+		void initialize(VertexType* v)
 		{
 			for(auto u : this->graph)
 			{
@@ -202,6 +265,12 @@ namespace CTL
 		{
 			this->graph.push_back(v);
 		}
+		
+		void AddVertex(const T& label)
+		{
+			this->graph.push_back(new VertexType(label));
+		}
+		
 
 		VertexType* FindVertex(const T& label)
 		{
@@ -335,7 +404,7 @@ namespace CTL
 		//	return inverted;
 		//}
 		
-		void Bellman-Ford(VertexType* begin);
+		void BellmanFord(VertexType* begin);
 // 		{
 // 			this->initialize(begin);
 // 			for(size_type i = 0; i < graph.size(); ++i)
@@ -368,9 +437,78 @@ namespace CTL
 // 				s.insert(u);
 // 				for(auto v : u->Adjacent())
 // 					this->Relax(u,v);
-				q.pop();
+//				q.pop();
+// 			}
+// 		}
+		
+		double** FloydWarshall()
+		{
+			std::unordered_map<VertexType*, unsigned int> index;
+			const auto V = this->graph.size();
+			double** paths = new double*[V]();
+			for(unsigned int i = 0; i < V; ++i)
+			{
+				paths[i]=new double[V]();
+			}
+			unsigned int ind = 0;
+			for(auto v : this->graph)
+			{
+				index[v]=ind++;
+			}
+			for(unsigned int i = 0; i < V; ++i)
+			{
+				for(unsigned int j = 0; j < V; ++j)
+				{
+					paths[i][j] = std::numeric_limits<double>::infinity();
+				}
+			}
+			for(auto v : this->graph)
+			{
+				unsigned I = index[v];
+				paths[I][I] = 0;
+				for(auto u : v->Adjacent())
+				{
+					paths[I][index[u.getTo()]]=u.getWeight();
+				}
+			}
+ 			for(unsigned int k = 0; k < V; ++k)
+			{
+				for(unsigned int i = 0; i < V; ++i)
+				{
+					for(unsigned int j = 0; j< V; ++j)
+					{
+						paths[i][j]=std::min(paths[i][j],paths[i][k]+paths[k][j]);
+					}
+				}
+			}
+			return paths;
+		}
+		
+		bool TransitiveClosure();
+// 		{
+// 			const auto V = this->graph.size();
+// 			bool** closure = new bool[V][V]();
+// 			for(unsigned int i = 0; i < V; ++i)
+// 			{
+// 				for(unsigned int j = 0;; j< V; ++j)
+// 				{
+// 					if(i==j || Edge(i,j)) closure[i][j] = true;
+// 					else closure[i][j] = false;
+// 				}
+// 			}
+// 			for(unsigned int k = 0; k < V; ++k)
+// 			{
+// 				for(unsigned int i = 0; i < V; ++i)
+// 				{
+// 					for(unsigned int j = 0;; j< V; ++j)
+// 					{
+// 						paths[i][j]=(paths[i][j] || (paths[i][k] && paths[k][j]));
+// 					}
+// 				}
 // 			}
 // 		}
 	};
+	
+	
 }
 #endif // !CTL_GRAPH

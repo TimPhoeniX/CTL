@@ -1,0 +1,13 @@
+5
+A B C D E
+10
+A B 1
+A D 17
+B A 16
+B E 1
+C A 5
+C B 2
+C D 14
+D C 11
+E A 3
+E C 25
