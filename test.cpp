@@ -26,7 +26,7 @@ int main()
 	V = g.VertexCount();
 	for(unsigned int i = 0; i < V; ++i)
 	{
-		for(unsigned int j = 0; i < V; ++i)
+		for(unsigned int j = 0; j < V; ++j)
 		{
 			std::cout << paths[i][j] << ' ';
 		}
