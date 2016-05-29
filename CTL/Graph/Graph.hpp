@@ -3,9 +3,9 @@
 
 #include "../Container/ctl_arraylist.hpp"
 #include "../Container/ctl_stack.hpp"
-#include <queue> //TODO: Replace
+#include <queue> ///TODO: Replace
 #include <unordered_map>
-#include "../ctl_pair.hpp"
+#include "../Sort/ctl_quick_sort.hpp"
 
 namespace CTL
 {
@@ -16,6 +16,9 @@ namespace CTL
 		Black
 	};
 	
+	template<typename,typename>
+	class Graph;
+
 	template<typename T>
 	class Vertex;
 	
@@ -23,21 +26,21 @@ namespace CTL
 	class PartialEdge
 	{
 	protected:
-		using VertexType = Vertex<T>;
+		using Vertex = Vertex<T>;
 		
-		VertexType* to = nullptr;
+		Vertex* to = nullptr;
 		double weight = 1;
 	public:
-		PartialEdge(VertexType* to) : to(to) {}
-		PartialEdge(VertexType* to, double weight) : to(to), weight(weight) {}
+		PartialEdge(Vertex* to) : to(to) {}
+		PartialEdge(Vertex* to, double weight) : to(to), weight(weight) {}
 		
 		
-		VertexType* getTo()
+		Vertex* getTo() const
 		{
 			return this->to;
 		}
 		
-		double getWeight()
+		double getWeight() const
 		{
 			return this->weight;
 		}
@@ -48,36 +51,41 @@ namespace CTL
 	class Edge : public PartialEdge<T>
 	{
 	protected:
-		using VertexType = typename PartialEdge<T>::VertexType;
+		using Vertex = typename PartialEdge<T>::Vertex;
 		
-		VertexType* from = nullptr;
+		Vertex* from = nullptr;
 	public:
-		Edge(VertexType* from, VertexType* to) : PartialEdge<T>(to), from(from) {}
-		Edge(VertexType* from, VertexType* to, double weight) : PartialEdge<T>(to,weight), from(from) {}
+		Edge(Vertex* from, Vertex* to) : PartialEdge<T>(to), from(from) {}
+		Edge(Vertex* from, Vertex* to, double weight) : PartialEdge<T>(to,weight), from(from) {}
 		
 		
-		VertexType* getFrom()
+		Vertex* getFrom() const
 		{
 			return this->from;
 		}
 		
-		
+		template<typename os>
+		friend os& operator<<(os& out, const Edge& e)
+		{
+			return (out << *e.from << ' ' << *e.to << ' ' << e.weight);
+		}
 	};
 	
 	template<typename T>
 	class Vertex
 	{
+		template<typename,typename>
+		friend class Graph;
 	public:
 		using VertexList = ArrayList<PartialEdge<T>>;
 //		using VertexList = std::vector<Vertex*>;
-		using VertexType = Vertex;
 
 	private:
  		T label;
 		double distance = 0;
 		long d =0, f = 0;
 		VertexState state = VertexState::White;
-		VertexType* parent = nullptr;
+		Vertex* parent = nullptr;
 		VertexList vList = VertexList(8);
 
 	public:
@@ -89,7 +97,7 @@ namespace CTL
 			label(label)
 		{}
 
-		const T& Label()
+		const T& Label() const
 		{
 			return this->label;
 		}
@@ -114,7 +122,7 @@ namespace CTL
 			return this->state;
 		}
 
-		VertexType* Parent()
+		Vertex* Parent()
 		{
 			return this->parent;
 		}
@@ -144,7 +152,7 @@ namespace CTL
 			this->state = state;
 		}
 
-		void SetParent(VertexType* par)
+		void SetParent(Vertex* par)
 		{
 			this->parent = par;
 		}
@@ -154,12 +162,12 @@ namespace CTL
 			return this->vList;
 		}
 
-		void AddVertex(VertexType* vertex)
+		void AddVertex(Vertex* vertex)
 		{
 			this->vList.push_back(PartialEdge<T>(vertex));
 		}
 		
-		void AddVertex(VertexType* vertex, double weight)
+		void AddVertex(Vertex* vertex, double weight)
 		{
 			this->vList.push_back(PartialEdge<T>(vertex,weight));
 		}
@@ -172,15 +180,21 @@ namespace CTL
 			this->parent = nullptr;
 			this->state = VertexState::White;
 		}
+
+		template<typename os>
+		friend os& operator<<(os& out, const Vertex v)
+		{
+			return out << v.label;
+		}
 	};
 
 	template<typename T>
 	class Undirected
 	{
 	public:
-		using VertexType = Vertex<T>;
+		using Vertex = Vertex<T>;
 
-		void AddEdge(VertexType* a, VertexType* b)
+		void AddEdge(Vertex* a, Vertex* b)
 		{
 			if(a&&b)
 			{
@@ -189,7 +203,7 @@ namespace CTL
 			}
 		}
 		
-		void AddEdge(VertexType* a, VertexType* b, double weight)
+		void AddEdge(Vertex* a, Vertex* b, double weight)
 		{
 			if(a&&b)
 			{
@@ -203,14 +217,14 @@ namespace CTL
 	class Directed
 	{
 	public:
-		using VertexType = Vertex<T>;
+		using Vertex = Vertex<T>;
 
-		void AddEdge(VertexType* a, VertexType* b)
+		void AddEdge(Vertex* a, Vertex* b)
 		{
 			if(a&&b) a->AddVertex(b);
 		}
 
-		void AddEdge(VertexType* a, VertexType* b, double weight)
+		void AddEdge(Vertex* a, Vertex* b, double weight)
 		{
 			if (a&&b) a->AddVertex(b, weight);
 		}
@@ -221,10 +235,10 @@ namespace CTL
 	class Graph : public Direction
 	{
 	public:
-		using VertexType = Vertex<T>;
-		using GraphType = ArrayList<VertexType*>;
-//		using GraphType = std::vector<VertexType*>;
-		
+		using Vertex = typename Direction::Vertex;
+		using GraphType = ArrayList<Vertex*>;
+//		using GraphType = std::vector<Vertex*>;
+		using EdgeList = ArrayList<Edge<T>>;
 		using size_type = typename GraphType::size_type;
 		using iterator = typename GraphType::iterator;
 		
@@ -232,7 +246,7 @@ namespace CTL
 		GraphType graph;
 		long DFSTime = 0;
 		
-		void initialize(VertexType* v)
+		void initialize(Vertex* v)
 		{
 			for(auto u : this->graph)
 			{
@@ -266,17 +280,17 @@ namespace CTL
 			return this->graph.end();
 		}
 
-		void AddVertex(VertexType* v)
+		void AddVertex(Vertex* v)
 		{
 			this->graph.push_back(v);
 		}
 		
 		void AddVertex(const T& label)
 		{
-			this->graph.push_back(new VertexType(label));
+			this->graph.push_back(new Vertex(label));
 		}
 		
-		VertexType* FindVertex(const T& label)
+		Vertex* FindVertex(const T& label)
 		{
 			for (auto v : this->graph)
 			{
@@ -285,14 +299,14 @@ namespace CTL
 			return nullptr;
 		}
 
-		void BFS(VertexType* begin)
+		void BFS(Vertex* begin)
 		{
 			for (auto v : this->graph)
 			{
 				v->Reset();
 			}
 			//TODO: Implement Queue Adapter;
-			std::queue<VertexType*> queue;
+			std::queue<Vertex*> queue;
 			queue.push(begin);
 			begin->SetDistance(0.);
 			begin->SetState(VertexState::Gray);
@@ -333,7 +347,7 @@ namespace CTL
 		//Test it
 		void IterativeDFS()
 		{
-			Stack<VertexType*,ArrayList<VertexType*>> stack;
+			Stack<Vertex*,ArrayList<Vertex*>> stack;
 			this->DFSTime=1;
 			for(auto v : this->graph)
 			{
@@ -367,7 +381,7 @@ namespace CTL
 			}
 		}
 		
-		void DFSVisit(VertexType* v)
+		void DFSVisit(Vertex* v)
 		{
 			v->SetD(this->DFSTime++);
 			v->SetState(VertexState::Gray);
@@ -384,7 +398,7 @@ namespace CTL
 		}
 
 		template<typename os>
-		os& PrintPath(VertexType* begin, VertexType* end, os& stream)
+		os& PrintPath(Vertex* begin, Vertex* end, os& stream)
 		{
 			if (begin == end)
 			{
@@ -397,7 +411,129 @@ namespace CTL
 			return this->PrintPath<os>(begin, end->Parent(), stream) << "<- " << end->Label() << ' ';
 		}
 		
-		
+		//Adapts Vertex to use as InTree for Kruskal's MST
+		struct DisjointSet
+		{
+			static void MakeSet(Vertex* v)
+			{
+				v->parent = v;
+			}
+
+			static Vertex* FindSet(Vertex* v)
+			{
+				if(v == v->parent) return v;
+				return (v->parent = FindSet(v->parent));
+			}
+
+			static void Union(Vertex* u, Vertex* v)
+			{
+				v->parent = u;
+			}
+		};
+
+		EdgeList KruskalMST()
+		{
+			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use KruskalMST on directed graph!");
+			EdgeList MST;
+			for(auto v : this->graph)
+			{
+				v->state = VertexState::White; //Needed to get unique edges
+				DisjointSet::MakeSet(v);
+			}
+			EdgeList Edges;
+			for(auto v : this->graph)
+			{
+				for(auto partial : v->Adjacent())
+				{
+					if(partial.getTo()->state == VertexState::Black) continue;
+					Edges.push_back(Edge<T>(v,partial.getTo(),partial.getWeight()));
+				}
+				v->state = VertexState::Black;
+			}
+			QuickSort(Edges.begin(), Edges.end(), [](PartialEdge<T>& lhs, PartialEdge<T>& rhs)->bool {return lhs.getWeight() < rhs.getWeight(); });
+			for(auto& edge : Edges)
+			{
+				auto u = DisjointSet::FindSet(edge.getFrom()), v = DisjointSet::FindSet(edge.getTo());
+				if(u!=v)
+				{
+					MST.push_back(edge);
+					DisjointSet::Union(u, v);
+				}
+			}
+			return MST;
+		}
+
+		void PrimMST()
+		{
+			using std::swap;
+			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use PrimMST on directed graph!");
+			for(auto v : this->graph)
+			{
+				v->distance = std::numeric_limits<double>::infinity();
+				v->parent = nullptr;
+			}
+			this->graph[0]->distance = 0;
+			auto cmp = [](Vertex* lhs, Vertex* rhs)->bool { return lhs->Distance() > rhs->Distance(); };
+			auto b = this->graph.begin(), e = this->graph.end();
+			std::make_heap(b,e, cmp);
+			while(b<e)
+			{
+				Vertex* v = *b;
+				for(auto partial : v->Adjacent())
+				{
+					Vertex* u = partial.getTo();
+					if(e!=std::find(b,e,u) && partial.getWeight() < u->distance)
+					{
+						u->parent = v;
+						u->distance = partial.getWeight();
+					}
+				}
+				swap(*b, *--e);
+				std::make_heap(b, e, cmp);
+			}
+		}
+
+		EdgeList PrimMSTE(double& total)
+		{
+			EdgeList mst;
+			total = 0.;
+			for(Vertex* v : this->graph)
+			{
+				Vertex* u = v->parent;
+				if(u == nullptr) continue;
+				if(u->label < v->label)
+					mst.push_back(Edge<T>(u, v, v->distance));
+				else
+					mst.push_back(Edge<T>(v, u, v->distance));
+			}
+			return mst;
+		}
+
+/*		MST Prim
+		{
+			foreach v in G.V
+			{
+				v.key = inf;
+				v.p = nullptr;
+			}
+			v0.key = 0;
+			foreach v in G.V
+				Q.push(v);
+			while(!Q.empty())
+			{
+				u = Q.top();
+				foreach v in u.Adjacent()
+				{
+					if v in Q && w(u,v) < v.key
+					{
+						v.p = u;
+						v.key = w(u,v);
+					}
+				}
+				q.pop();
+			}
+
+		}*/
 		
 		Graph StronglyConnectedComponents();
 		//{
@@ -408,7 +544,7 @@ namespace CTL
 		//	return inverted;
 		//}
 		
-		void BellmanFord(VertexType* begin);
+		void BellmanFord(Vertex* begin);
 // 		{
 // 			this->initialize(begin);
 // 			for(size_type i = 0; i < graph.size(); ++i)
@@ -426,11 +562,11 @@ namespace CTL
 // 			return true;
 // 		}
 		
-		void Dijkstra(VertexType* begin);
+		void Dijkstra(Vertex* begin);
 // 		{
 // 			this->initialize(begin);
-// 			std::set<VertexType*> s;
-// 			std::priority_queue<VertexType*> q;
+// 			std::set<Vertex*> s;
+// 			std::priority_queue<Vertex*> q;
 // 			for(auto v : this->graph)
 // 			{
 // 				q.push(v);
@@ -447,7 +583,7 @@ namespace CTL
 		
 		double** FloydWarshall()
 		{
-			std::unordered_map<VertexType*, unsigned int> index;
+			std::unordered_map<Vertex*, unsigned int> index;
 			const auto V = this->graph.size();
 			double** paths = new double*[V]();
 			for(unsigned int i = 0; i < V; ++i)
@@ -491,7 +627,7 @@ namespace CTL
 		bool TransitiveClosure();
 // 		{
 // 			const auto V = this->graph.size();
-// 			bool** closure = new bool[V][V]();
+//			bool** closure = new bool[V][V]();
 // 			for(unsigned int i = 0; i < V; ++i)
 // 			{
 // 				for(unsigned int j = 0;; j< V; ++j)

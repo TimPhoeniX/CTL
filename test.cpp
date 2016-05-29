@@ -6,7 +6,7 @@
 
 int main()
 {
-	CTL::Graph<char,CTL::Directed<char> > g;
+	CTL::Graph<char,CTL::Undirected<char> > g;
 	unsigned int V = 0;
 	std::cin >> V;
 	char a, b;
@@ -22,14 +22,21 @@ int main()
 		std::cin >> a >> b >> w;
 		g.AddEdge(g.FindVertex(a),g.FindVertex(b), w);
 	}
-	auto paths = g.FloydWarshall();
-	V = g.VertexCount();
-	for(unsigned int i = 0; i < V; ++i)
+	w = 0.;
+//	auto mst = g.KruskalMST();
+	g.PrimMST();
+	auto mst = g.PrimMSTE(w);
+	CTL::QuickSort(mst.begin(), mst.end(), [](const CTL::Edge<char>& lhs, const CTL::Edge<char>& rhs)->bool
 	{
-		for(unsigned int j = 0; j < V; ++j)
-		{
-			std::cout << paths[i][j] << ' ';
-		}
-		std::cout << '\n';
+		return lhs.getFrom()->Label() < rhs.getFrom()->Label()
+			|| (!(rhs.getFrom()->Label() < lhs.getFrom()->Label())
+				&& lhs.getTo()->Label() < rhs.getTo()->Label());
+	});
+	
+	for(auto e : mst)
+	{
+		std::cout << e.getFrom()->Label() << '-' << e.getTo()->Label() << ' ' << e.getWeight() <<'\n';
+		w += e.getWeight();
 	}
+	std::cout << w << std::endl;
 }

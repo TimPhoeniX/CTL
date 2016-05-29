@@ -187,20 +187,22 @@ namespace CTL
 
 		void push_front(const value_type& e)
 		{
-			if(this->cSize < this->cMaxSize)
+			if(this->cSize == this->cMaxSize)
 			{
-				this->MoveBack(0);
-				*(this->storage) = e;
+				this->reserve(2 * this->cMaxSize);
 			}
+			this->MoveBack(0);
+			*(this->storage) = e;
 		}
 
 		void push_front(value_type&& e)
 		{
-			if(this->cSize < this->cMaxSize)
+			if(this->cSize == this->cMaxSize)
 			{
-				this->MoveBack(0);
-				(*this->storage) = std::move(e);
+				this->reserve(2 * this->cMaxSize);
 			}
+			this->MoveBack(0);
+			*(this->storage) = std::move(e);
 		}
 
 		void push_back(const value_type& e)
@@ -214,10 +216,11 @@ namespace CTL
 
 		void push_back(value_type&& e)
 		{
-			if(this->cSize < this->cMaxSize)
+			if(this->cSize == this->cMaxSize)
 			{
-				std::allocator_traits<allocator_type>::construct(*this, this->storage + (cSize++), std::move(e));
+				this->reserve(2 * this->cMaxSize);
 			}
+			Alloc::construct(*this, this->storage + (cSize++), std::forward<T>(e));
 		}
 
 		//Standarize later;

@@ -85,13 +85,13 @@ namespace CTL
 	{
 		using std::swap;
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
-		Type pivot = *(Pivot(first, last--));
+		Type pivot = *(Pivot(--first, last));
 		while(true)
 		{
-			while(*first < pivot) ++first;
-			while(pivot < *last) --last;
+			while(*++first < pivot);
+			while(pivot < *--last);
 			if(first < last) swap(*first, *last);
-			else return last;
+			else return first;
 		}
 	}
 
@@ -100,13 +100,13 @@ namespace CTL
 	{
 		using std::swap;
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
-		Type pivot = *(RightmostPivot<RAIterator,Compar>(first, last--, comp));
+		Type pivot = *(RightmostPivot<RAIterator,Compar>(first--, last, comp));
 		while(true)
 		{
-			while(comp(*first, pivot)) ++first;
-			while(comp(pivot, *last)) --last;
+			while(comp(*++first, pivot));
+			while(comp(pivot, *--last));
 			if(first < last) swap(*first, *last);
-			else return last;
+			else return first;
 		}
 	}
 
@@ -115,13 +115,13 @@ namespace CTL
 	{
 		using std::swap;
 		using Type = typename std::iterator_traits<RAIterator>::value_type;
-		Type pivot = *(Pivot(first, last--, comp));
+		Type pivot = *(Pivot(--first, last, comp));
 		while(true)
 		{
-			while(comp(*first, pivot)) ++first;
-			while(comp(pivot, *last)) --last;
+			while(comp(*++first, pivot));
+			while(comp(pivot, *--last));
 			if(first < last) swap(*first, *last);
-			else return last;
+			else return first;
 		}
 	}
 
