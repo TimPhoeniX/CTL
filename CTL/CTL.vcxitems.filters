@@ -71,5 +71,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Graph\Graph.hpp">
       <Filter>Graph</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\PrintHeap.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

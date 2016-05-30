@@ -6,6 +6,7 @@
 #include <queue> ///TODO: Replace
 #include <unordered_map>
 #include "../Sort/ctl_quick_sort.hpp"
+#include "../Utility/PrintHeap.hpp"
 
 namespace CTL
 {
@@ -256,6 +257,85 @@ namespace CTL
 			v->SetDistance(0.);
 		}
 		
+		//Adapts Vertex to use as InTree for Kruskal's MST
+		struct DisjointSet
+		{
+			static void MakeSet(Vertex* v)
+			{
+				v->parent = v;
+			}
+
+			static Vertex* FindSet(Vertex* v)
+			{
+				if (v == v->parent) return v;
+				return (v->parent = FindSet(v->parent));
+			}
+
+			static void Union(Vertex* u, Vertex* v)
+			{
+				v->parent = u;
+			}
+		};
+
+		//Allows for using list of vertexes as Priority Queue for Prim's
+		struct Heap
+		{
+			//using Iter = int*;
+			using Iter = typename GraphType::iterator;
+			template<typename Compare>
+			static void SiftDown(Iter first, Iter last, Iter i, Compare comp)
+			{
+				using std::swap;
+				typename std::iterator_traits<Iter>::difference_type Node = i - first;
+				Iter Top = i, left = (first + (2 * Node + 1)), right = (first + (2 * Node + 2));
+				if (left < last && comp(*Top, *left))
+				{
+					Top = left;
+				}
+				if (right < last && comp(*Top, *right))
+				{
+					Top = right;
+				}
+				if (Top != i)
+				{
+					swap(*i, *Top);
+					SiftDown(first, last, Top, comp);
+				}
+			}
+
+			template<typename Compare>
+			static void BuildHeap(Iter first, Iter last, Compare comp)
+			{
+				Iter i = first + (((last - first) / 2) - 1);
+				while (i >= first)
+				{
+					SiftDown(first, last, i--, comp);
+				}
+			}
+
+			template<typename Compare>
+			static void SiftUp(Iter first, Iter elem, Compare comp)
+			{
+				using std::swap;
+				Iter cpy = elem + 1;
+				Iter parent = first + ((elem - first-1) / 2);
+				while (elem > first && comp(*parent, *elem))
+				{
+					swap(*elem, *parent);
+					elem = parent;
+					parent = first + ((elem - first-1) / 2);
+				}
+			}
+
+			template<typename Compare>
+			static void PopHeap(Iter first, Iter last, Compare comp)
+			{
+				using std::swap;
+				swap(*first, *--last);
+				SiftDown(first, last, first,comp);
+			}
+		};
+
 	public:
 		~Graph()
 		{
@@ -264,7 +344,7 @@ namespace CTL
 				delete *it;
 			}
 		}
-		
+
 		size_t VertexCount()
 		{
 			return this->graph.size();
@@ -410,26 +490,15 @@ namespace CTL
 			}
 			return this->PrintPath<os>(begin, end->Parent(), stream) << "<- " << end->Label() << ' ';
 		}
-		
-		//Adapts Vertex to use as InTree for Kruskal's MST
-		struct DisjointSet
+
+		template<typename os>
+		void PrintPaths(Vertex* begin, os& out)
 		{
-			static void MakeSet(Vertex* v)
+			for (auto v : this->graph)
 			{
-				v->parent = v;
+				this->PrintPath(begin, v, out) << v->distance << std::endl;
 			}
-
-			static Vertex* FindSet(Vertex* v)
-			{
-				if(v == v->parent) return v;
-				return (v->parent = FindSet(v->parent));
-			}
-
-			static void Union(Vertex* u, Vertex* v)
-			{
-				v->parent = u;
-			}
-		};
+		}
 
 		EdgeList KruskalMST()
 		{
@@ -471,25 +540,28 @@ namespace CTL
 			{
 				v->distance = std::numeric_limits<double>::infinity();
 				v->parent = nullptr;
+				v->state = VertexState::White; //Eliminates linear cost of lookup in array or extra space for lookup in set
 			}
 			this->graph[0]->distance = 0;
 			auto cmp = [](Vertex* lhs, Vertex* rhs)->bool { return lhs->Distance() > rhs->Distance(); };
 			auto b = this->graph.begin(), e = this->graph.end();
-			std::make_heap(b,e, cmp);
+			Heap::BuildHeap(b,e, cmp);
 			while(b<e)
 			{
 				Vertex* v = *b;
+				v->state = VertexState::Black;
+				Heap::PopHeap(b, e--, cmp);\
 				for(auto partial : v->Adjacent())
 				{
 					Vertex* u = partial.getTo();
-					if(e!=std::find(b,e,u) && partial.getWeight() < u->distance)
+					if (u->state != VertexState::Black && partial.getWeight() < u->distance)
 					{
 						u->parent = v;
 						u->distance = partial.getWeight();
+						auto changed = std::find(b, e, u);
+						Heap::SiftUp(b,changed,cmp);
 					}
 				}
-				swap(*b, *--e);
-				std::make_heap(b, e, cmp);
 			}
 		}
 
@@ -509,31 +581,31 @@ namespace CTL
 			return mst;
 		}
 
-/*		MST Prim
+		bool ConnectedComponentTest(EdgeList& edges)
 		{
-			foreach v in G.V
+			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use ConnectedComponent on directed graph!");
+			for(Vertex* e : this->graph)
 			{
-				v.key = inf;
-				v.p = nullptr;
+				e->state = VertexState::White;
+				DisjointSet::MakeSet(e);
 			}
-			v0.key = 0;
-			foreach v in G.V
-				Q.push(v);
-			while(!Q.empty())
+			for(Edge<T> e : edges)
 			{
-				u = Q.top();
-				foreach v in u.Adjacent()
+				Vertex* a = DisjointSet::FindSet(e.getFrom());
+				Vertex* b = DisjointSet::FindSet(e.getTo());
+				if (a != b)
 				{
-					if v in Q && w(u,v) < v.key
-					{
-						v.p = u;
-						v.key = w(u,v);
-					}
+					e.getFrom()->state = VertexState::Black;
+					e.getTo()->state = VertexState::Black;
+					DisjointSet::Union(a, b);
 				}
-				q.pop();
 			}
-
-		}*/
+			for (Vertex* e : this->graph)
+			{
+				if (e->state == VertexState::White) return false;
+			}
+			return true;
+		}
 		
 		Graph StronglyConnectedComponents();
 		//{
@@ -562,24 +634,29 @@ namespace CTL
 // 			return true;
 // 		}
 		
-		void Dijkstra(Vertex* begin);
-// 		{
-// 			this->initialize(begin);
-// 			std::set<Vertex*> s;
-// 			std::priority_queue<Vertex*> q;
-// 			for(auto v : this->graph)
-// 			{
-// 				q.push(v);
-// 			}
-// 			while(!q.empty())
-// 			{
-// 				auto u = q.top();
-// 				s.insert(u);
-// 				for(auto v : u->Adjacent())
-// 					this->Relax(u,v);
-//				q.pop();
-// 			}
-// 		}
+		void Dijkstra(Vertex* begin)
+ 		{
+ 			this->initialize(begin);
+			auto cmp = [](const Vertex* lhs, const Vertex* rhs)->bool {return lhs->distance > rhs->distance; };
+			auto b = this->graph.begin(), e = this->graph.end();
+			Heap::BuildHeap(b, e, cmp);
+ 			while(b!=e)
+ 			{
+				auto v = *b;
+				Heap::PopHeap(b, e--, cmp);
+				for (auto partial : v->Adjacent())
+				{
+					auto u = partial.getTo();
+					if (u->distance > v->distance + partial.getWeight())
+					{
+						u->distance = v->distance + partial.getWeight();
+						u->parent = v;
+						auto changed = std::find(b, e, u);
+						Heap::SiftUp(b, (changed!=e?changed:b) , cmp);
+					}
+				}
+ 			}
+ 		}
 		
 		double** FloydWarshall()
 		{

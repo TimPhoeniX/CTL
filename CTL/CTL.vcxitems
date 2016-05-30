@@ -34,5 +34,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_makearray.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_singleton.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\ctl_traits.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\PrintHeap.hpp" />
   </ItemGroup>
 </Project>
