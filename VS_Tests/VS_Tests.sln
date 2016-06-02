@@ -7,9 +7,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTL", "..\CTL\CTL.vcxitems"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneralTesting", "Testing\Testing.vcxproj", "{2AAD95E5-39D2-4501-9598-8089F085C91C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AiSD2", "AiSD2\AiSD2.vcxproj", "{61655BBE-6E74-48AB-A1CD-31F25BC231D0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\CTL\CTL.vcxitems*{2aad95e5-39d2-4501-9598-8089f085c91c}*SharedItemsImports = 4
+		..\CTL\CTL.vcxitems*{61655bbe-6e74-48ab-a1cd-31f25bc231d0}*SharedItemsImports = 4
 		..\CTL\CTL.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +30,14 @@ Global
 		{2AAD95E5-39D2-4501-9598-8089F085C91C}.Release|x64.Build.0 = Release|x64
 		{2AAD95E5-39D2-4501-9598-8089F085C91C}.Release|x86.ActiveCfg = Release|Win32
 		{2AAD95E5-39D2-4501-9598-8089F085C91C}.Release|x86.Build.0 = Release|Win32
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Debug|x64.ActiveCfg = Debug|x64
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Debug|x64.Build.0 = Debug|x64
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Debug|x86.ActiveCfg = Debug|Win32
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Debug|x86.Build.0 = Debug|Win32
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Release|x64.ActiveCfg = Release|x64
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Release|x64.Build.0 = Release|x64
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Release|x86.ActiveCfg = Release|Win32
+		{61655BBE-6E74-48AB-A1CD-31F25BC231D0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

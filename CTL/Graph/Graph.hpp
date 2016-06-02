@@ -189,67 +189,100 @@ namespace CTL
 		}
 	};
 
-	template<typename T>
-	class Undirected
+	namespace Graphs
 	{
-	public:
-		using Vertex = Vertex<T>;
-
-		void AddEdge(Vertex* a, Vertex* b)
+		template<typename T>
+		class Undirected
 		{
-			if(a&&b)
+			using Vertex = Vertex<T>;
+			using GraphType = ArrayList<Vertex*>;
+		protected:
+			const static constexpr bool directed = false;
+
+			void clear(GraphType& graph)
 			{
-				a->AddVertex(b);
-				b->AddVertex(a);
+				for (auto it = graph.begin(), end = graph.end(); it != end; ++it)
+				{
+					std::cout << (*it)->Label();
+					delete *it;
+				}
 			}
-		}
-		
-		void AddEdge(Vertex* a, Vertex* b, double weight)
-		{
-			if(a&&b)
+
+			void AddEdge(Vertex* a, Vertex* b)
 			{
-				a->AddVertex(b,weight);
-				b->AddVertex(a,weight);
+				if (a&&b)
+				{
+					a->AddVertex(b);
+					b->AddVertex(a);
+				}
 			}
-		}
-	};
 
-	template<typename T>
-	class Directed
+			void AddEdge(Vertex* a, Vertex* b, double weight)
+			{
+				if (a&&b)
+				{
+					a->AddVertex(b, weight);
+					b->AddVertex(a, weight);
+				}
+			}
+		};
+
+		template<typename T>
+		class Directed
+		{
+			using Vertex = Vertex<T>;
+			using GraphType = ArrayList<Vertex*>;
+		protected:
+			const static constexpr bool directed = true;
+
+			void clear(GraphType& graph)
+			{
+				for (auto it = graph.begin(), end = graph.end(); it != end; ++it)
+				{
+					std::cout << (*it)->Label();
+					delete *it;
+				}
+			}
+			
+			void AddEdge(Vertex* a, Vertex* b)
+			{
+				if (a&&b) a->AddVertex(b);
+			}
+			
+			void AddEdge(Vertex* a, Vertex* b, double weight)
+			{
+				if (a&&b) a->AddVertex(b, weight);
+			}
+		};
+
+		template<typename T>
+		class UndirectedExtern : public Undirected<T>
+		{
+			using GraphType = ArrayList<Vertex*>;
+		protected:
+			void clear(GraphType&)
+			{}
+		};
+	}
+
+	template<typename T, template <typename> class P = Graphs::Undirected>
+	class Graph : public P<T>
 	{
 	public:
+		using Policy = P<T>;
 		using Vertex = Vertex<T>;
-
-		void AddEdge(Vertex* a, Vertex* b)
-		{
-			if(a&&b) a->AddVertex(b);
-		}
-
-		void AddEdge(Vertex* a, Vertex* b, double weight)
-		{
-			if (a&&b) a->AddVertex(b, weight);
-		}
-	};
-
-
-	template<typename T, typename Direction = Undirected<T>>
-	class Graph : public Direction
-	{
-	public:
-		using Vertex = typename Direction::Vertex;
 		using GraphType = ArrayList<Vertex*>;
-//		using GraphType = std::vector<Vertex*>;
 		using EdgeList = ArrayList<Edge<T>>;
 		using size_type = typename GraphType::size_type;
 		using iterator = typename GraphType::iterator;
-		
+
 	private:
 		GraphType graph;
 		long DFSTime = 0;
 		
 		void initialize(Vertex* v)
 		{
-			for(auto u : this->graph)
+			for(Vertex* u : this->graph)
 			{
 				u->SetDistance(std::numeric_limits<double>::infinity());
 				u->SetParent(nullptr);
@@ -257,7 +290,7 @@ namespace CTL
 			v->SetDistance(0.);
 		}
 		
-		//Adapts Vertex to use as InTree for Kruskal's MST
+		//Adapts Vertex to use as InTree
 		struct DisjointSet
 		{
 			static void MakeSet(Vertex* v)
@@ -277,7 +310,7 @@ namespace CTL
 			}
 		};
 
-		//Allows for using list of vertexes as Priority Queue for Prim's
+		//Allows for using list of vertexes as Priority Queue
 		struct Heap
 		{
 			//using Iter = int*;
@@ -337,12 +370,13 @@ namespace CTL
 		};
 
 	public:
+		Graph() = default;
+		Graph(Graph&& g) : graph(std::move(g.graph)) {}
+		Graph(const Graph&) = default;
+
 		~Graph()
 		{
-			for(auto it = graph.begin(), end = graph.end(); it!=end; ++it)
-			{
-				delete *it;
-			}
+			this->Policy::clear(this->graph);
 		}
 
 		size_t VertexCount()
@@ -388,23 +422,24 @@ namespace CTL
 			//TODO: Implement Queue Adapter;
 			std::queue<Vertex*> queue;
 			queue.push(begin);
-			begin->SetDistance(0.);
-			begin->SetState(VertexState::Gray);
+			begin->distance = 0.;
+			begin->state=VertexState::Gray;
 			while (!queue.empty())
 			{
 				auto vert = queue.front();
 				queue.pop();
-				for (auto v : vert->Adjacent())
+				for (auto partial : vert->Adjacent())
 				{
-					if (v->State() == VertexState::White)
+					auto v = partial.getTo();
+					if (v->state == VertexState::White)
 					{
-						v->SetState(VertexState::Gray);
-						v->SetDistance(vert->Distance() + 1.);
-						v->SetParent(vert);
+						v->state = VertexState::Gray;
+						v->distance = vert->distance + 1.;
+						v->parent = vert;
 						queue.push(v);
 					}
 				}
-				vert->SetState(VertexState::Black);
+				vert->state = VertexState::Black;
 			}
 		}
 
@@ -439,7 +474,7 @@ namespace CTL
 				{
 					v->setState(VertexState::Gray);
 					v->setD(this->DFSTime++);
-					stack.push(*v);
+					stack.push(v);
 					while(!stack.empty())
 					{
 						auto u = stack.top();
@@ -502,7 +537,7 @@ namespace CTL
 
 		EdgeList KruskalMST()
 		{
-			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use KruskalMST on directed graph!");
+			static_assert(!directed, "Cannot use KruskalMST on directed graph!");
 			EdgeList MST;
 			for(auto v : this->graph)
 			{
@@ -535,7 +570,7 @@ namespace CTL
 		void PrimMST()
 		{
 			using std::swap;
-			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use PrimMST on directed graph!");
+			static_assert(!directed, "Cannot use PrimMST on directed graph!");
 			for(auto v : this->graph)
 			{
 				v->distance = std::numeric_limits<double>::infinity();
@@ -616,23 +651,46 @@ namespace CTL
 		//	return inverted;
 		//}
 		
-		void BellmanFord(Vertex* begin);
-// 		{
-// 			this->initialize(begin);
-// 			for(size_type i = 0; i < graph.size(); ++i)
-// 			{
-// 				for(Edge e : Edges)
-// 				{
-// 					Relax(e.f,e.s,W);
-// 				}
-// 			}
-// 			for(Edge e : Edges)
-// 			{
-// 				if(e.v.d > e.u.d + W(u,v))
-// 					return false;
-// 			}
-// 			return true;
-// 		}
+		template<typename os>
+		void PrintShortest(os& out)
+		{
+			QuickSort(this->graph.begin(), this->graph.end(), [](Vertex* lhs, Vertex* rhs)->bool { return lhs->label < rhs->label; });
+			for (Vertex* v : this->graph)
+			{
+				out << v->label << ' ' << v->distance << '\n';
+			}
+			out << std::endl;
+		}
+
+		bool BellmanFord(Vertex* begin)
+ 		{
+ 			this->initialize(begin);
+			EdgeList Edges;
+			for (auto v : this->graph)
+			{
+				for (auto partial : v->Adjacent())
+					Edges.push_back(Edge<T>(v, partial.getTo(), partial.getWeight()));
+			}
+ 			for(size_type i = 1; i < graph.size(); ++i)
+ 			{
+ 				for(Edge<T> e : Edges)
+ 				{
+ 					//Relax(e.f,e.s,W);
+					Vertex* v = e.getFrom(), *u = e.getTo();
+					if (u->distance > v->distance + e.getWeight())
+					{
+						u->distance = v->distance + e.getWeight();
+						u->parent = v;
+					}
+ 				}
+ 			}
+ 			for(Edge<T> e : Edges)
+ 			{
+ 				if(e.getTo()->distance > e.getFrom()->distance + e.getWeight())
+ 					return false;
+ 			}
+ 			return true;
+ 		}
 		
 		void Dijkstra(Vertex* begin)
  		{
