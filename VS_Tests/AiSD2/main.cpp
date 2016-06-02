@@ -18,7 +18,7 @@ struct Cell
 	}
 };
 
-using GraphMaze = CTL::Graph<Cell>;
+using GraphMaze = CTL::Graph<Cell,CTL::Graphs::UndirectedExtern>;
 
 class Maze
 {
@@ -49,6 +49,11 @@ public:
 	Vertex& operator()(size_t x, size_t y)
 	{
 		return maze[y*Y + x];
+	}
+
+	Vertex& operator()(Cell c)
+	{
+		return maze[c.y*Y + c.x];
 	}
 
 	Vertex* begin()
@@ -96,7 +101,7 @@ GraphMaze Graphify(Maze& m)
 	return g;
 }
 
-void main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	size_t X = 10, Y = 10;
 	if (argc > 2)
@@ -104,8 +109,11 @@ void main(int argc, char** argv)
 		X = std::atoll(argv[1]);
 		Y = std::atoll(argv[2]);
 	}
-	Maze m(5, 5);
+	Maze m(X, Y);
 	GraphMaze g = Graphify(m);
-	g.BFS(&m(0, 0));
-	g.PrintPaths(&m(0, 0),std::cout);
+	auto mst_e = g.KruskalMST();
+	g.ClearEdges();
+	g.AddEdges(mst_e);
+	g.Dijkstra(&m(0, 0));
+	g.PrintPath(&m(0, 0), &m(X - 1, Y - 1), std::cout);
 }

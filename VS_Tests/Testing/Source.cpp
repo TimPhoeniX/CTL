@@ -6,7 +6,7 @@
 
 int main()
 {
-	CTL::Vertex<char>* vs = new CTL::Vertex<char>[10];
+	CTL::VertexT<char>* vs = new CTL::VertexT<char>[10];
 	CTL::Graph<char> g;
 	for (int i = 0; i < 10; ++i)
 	{

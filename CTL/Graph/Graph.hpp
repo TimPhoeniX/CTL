@@ -17,17 +17,17 @@ namespace CTL
 		Black
 	};
 	
-	template<typename,typename>
+	template<typename,template<typename> class>
 	class Graph;
 
 	template<typename T>
-	class Vertex;
+	class VertexT;
 	
 	template<typename T>
 	class PartialEdge
 	{
 	protected:
-		using Vertex = Vertex<T>;
+		using Vertex = VertexT<T>;
 		
 		Vertex* to = nullptr;
 		double weight = 1;
@@ -73,9 +73,9 @@ namespace CTL
 	};
 	
 	template<typename T>
-	class Vertex
+	class VertexT
 	{
-		template<typename,typename>
+		template<typename, template<typename> class>
 		friend class Graph;
 	public:
 		using VertexList = ArrayList<PartialEdge<T>>;
@@ -86,15 +86,15 @@ namespace CTL
 		double distance = 0;
 		long d =0, f = 0;
 		VertexState state = VertexState::White;
-		Vertex* parent = nullptr;
+		VertexT* parent = nullptr;
 		VertexList vList = VertexList(8);
 
 	public:
-		Vertex() : Vertex(T())
+		VertexT() : VertexT(T())
 		{
 		}
 
-		explicit Vertex(const T& label) :
+		explicit VertexT(const T& label) :
 			label(label)
 		{}
 
@@ -123,7 +123,7 @@ namespace CTL
 			return this->state;
 		}
 
-		Vertex* Parent()
+		VertexT* Parent()
 		{
 			return this->parent;
 		}
@@ -153,7 +153,7 @@ namespace CTL
 			this->state = state;
 		}
 
-		void SetParent(Vertex* par)
+		void SetParent(VertexT* par)
 		{
 			this->parent = par;
 		}
@@ -163,12 +163,12 @@ namespace CTL
 			return this->vList;
 		}
 
-		void AddVertex(Vertex* vertex)
+		void AddVertex(VertexT* vertex)
 		{
 			this->vList.push_back(PartialEdge<T>(vertex));
 		}
 		
-		void AddVertex(Vertex* vertex, double weight)
+		void AddVertex(VertexT* vertex, double weight)
 		{
 			this->vList.push_back(PartialEdge<T>(vertex,weight));
 		}
@@ -183,7 +183,7 @@ namespace CTL
 		}
 
 		template<typename os>
-		friend os& operator<<(os& out, const Vertex v)
+		friend os& operator<<(os& out, const VertexT v)
 		{
 			return out << v.label;
 		}
@@ -194,20 +194,20 @@ namespace CTL
 		template<typename T>
 		class Undirected
 		{
-			using Vertex = Vertex<T>;
-			using GraphType = ArrayList<Vertex*>;
 		protected:
+			using Vertex = VertexT<T>;
+			using GraphType = ArrayList<Vertex*>;
 			const static constexpr bool directed = false;
 
 			void clear(GraphType& graph)
 			{
 				for (auto it = graph.begin(), end = graph.end(); it != end; ++it)
 				{
-					std::cout << (*it)->Label();
 					delete *it;
 				}
 			}
 
+		public:
 			void AddEdge(Vertex* a, Vertex* b)
 			{
 				if (a&&b)
@@ -230,20 +230,20 @@ namespace CTL
 		template<typename T>
 		class Directed
 		{
-			using Vertex = Vertex<T>;
-			using GraphType = ArrayList<Vertex*>;
 		protected:
+			using Vertex = VertexT<T>;
+			using GraphType = ArrayList<Vertex*>;
 			const static constexpr bool directed = true;
 
 			void clear(GraphType& graph)
 			{
 				for (auto it = graph.begin(), end = graph.end(); it != end; ++it)
 				{
-					std::cout << (*it)->Label();
 					delete *it;
 				}
 			}
 			
+		public:
 			void AddEdge(Vertex* a, Vertex* b)
 			{
 				if (a&&b) a->AddVertex(b);
@@ -258,20 +258,21 @@ namespace CTL
 		template<typename T>
 		class UndirectedExtern : public Undirected<T>
 		{
-			using GraphType = ArrayList<Vertex*>;
 		protected:
+			using Vertex = typename Undirected<T>::Vertex;
+			using GraphType = typename Undirected<T>::GraphType;
 			void clear(GraphType&)
 			{}
 		};
 	}
 
-	template<typename T, template <typename> class P = Graphs::Undirected>
+	template<typename T, template <typename> class P = Graphs::Undirected >
 	class Graph : public P<T>
 	{
 	public:
 		using Policy = P<T>;
-		using Vertex = Vertex<T>;
-		using GraphType = ArrayList<Vertex*>;
+		using Vertex = typename Policy::Vertex;
+		using GraphType = typename Policy::GraphType;
 		using EdgeList = ArrayList<Edge<T>>;
 		using size_type = typename GraphType::size_type;
 		using iterator = typename GraphType::iterator;
@@ -377,6 +378,14 @@ namespace CTL
 		~Graph()
 		{
 			this->Policy::clear(this->graph);
+		}
+
+		void ClearEdges()
+		{
+			for(Vertex* v : this->graph)
+			{
+				v->Adjacent().clear();
+			}
 		}
 
 		size_t VertexCount()
@@ -532,6 +541,14 @@ namespace CTL
 			for (auto v : this->graph)
 			{
 				this->PrintPath(begin, v, out) << v->distance << std::endl;
+			}
+		}
+
+		void AddEdges(const EdgeList& e)
+		{
+			for(auto edge : e)
+			{
+				this->Policy::AddEdge(edge.getFrom(), edge.getTo(), edge.getWeight());
 			}
 		}
 
