@@ -563,7 +563,7 @@ namespace CTL
 
 		EdgeList KruskalMST()
 		{
-			static_assert(!directed, "Cannot use KruskalMST on directed graph!");
+			static_assert(!Policy::directed, "Cannot use KruskalMST on directed graph!");
 			EdgeList MST;
 			for(auto v : this->graph)
 			{
@@ -595,7 +595,7 @@ namespace CTL
 
 		EdgeList KruskalMaze()
 		{
-			static_assert(!directed, "Cannot use KruskalMazeMST on directed graph!");
+			static_assert(!Policy::directed, "Cannot use KruskalMazeMST on directed graph!");
 			EdgeList Maze;
 			for(auto v : this->graph)
 			{
@@ -629,7 +629,7 @@ namespace CTL
 		void PrimMST()
 		{
 			using std::swap;
-			static_assert(!directed, "Cannot use PrimMST on directed graph!");
+			static_assert(!Policy::directed, "Cannot use PrimMST on directed graph!");
 			for(auto v : this->graph)
 			{
 				v->distance = std::numeric_limits<double>::infinity();
@@ -807,7 +807,7 @@ namespace CTL
 				v->state = VertexState::Black;
 				for (auto partial : v->Adjacent())
 				{
-					auto u = partial.getTo();
+					u = partial.getTo();
 					if (u->distance > v->distance + partial.getWeight())
 					{
 						u->distance = v->distance + partial.getWeight();
