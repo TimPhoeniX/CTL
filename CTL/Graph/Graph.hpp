@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include "../Sort/ctl_quick_sort.hpp"
 #include "../Utility/PrintHeap.hpp"
+#include "../Container/PriorityQueue.hpp"
+#include <cstdlib>
 
 namespace CTL
 {
@@ -44,6 +46,11 @@ namespace CTL
 		double getWeight() const
 		{
 			return this->weight;
+		}
+
+		void setWeight(double w)
+		{
+			this->weight = w;
 		}
 	};
 	
@@ -83,8 +90,7 @@ namespace CTL
 
 	private:
  		T label;
-		double distance = 0;
-		long d =0, f = 0;
+		double distance = 0, estimate = 0;
 		VertexState state = VertexState::White;
 		VertexT* parent = nullptr;
 		VertexList vList = VertexList(8);
@@ -276,6 +282,8 @@ namespace CTL
 		using EdgeList = ArrayList<Edge<T>>;
 		using size_type = typename GraphType::size_type;
 		using iterator = typename GraphType::iterator;
+		using QueueEntry = HeapEntry<Vertex*, double>;
+		using EntryList = ArrayList<QueueEntry>;
 
 	private:
 		GraphType graph;
@@ -285,6 +293,7 @@ namespace CTL
 		{
 			for(Vertex* u : this->graph)
 			{
+				u->state = VertexState::White;
 				u->SetDistance(std::numeric_limits<double>::infinity());
 				u->SetParent(nullptr);
 			}
@@ -584,6 +593,39 @@ namespace CTL
 			return MST;
 		}
 
+		EdgeList KruskalMaze()
+		{
+			static_assert(!directed, "Cannot use KruskalMazeMST on directed graph!");
+			EdgeList Maze;
+			for(auto v : this->graph)
+			{
+				v->state = VertexState::White; //Needed to get unique edges
+				DisjointSet::MakeSet(v);
+			}
+			EdgeList Edges;
+			for(auto v : this->graph)
+			{
+				for(auto partial : v->Adjacent())
+				{
+					if(partial.getTo()->state == VertexState::Black) continue;
+					Edges.push_back(Edge<T>(v, partial.getTo(), partial.getWeight()));
+				}
+				v->state = VertexState::Black;
+			}
+			Maze.reserve(Edges.size() / 4);
+			std::random_shuffle(Edges.begin(), Edges.end());
+			for(auto& edge : Edges)
+			{
+				auto u = DisjointSet::FindSet(edge.getFrom()), v = DisjointSet::FindSet(edge.getTo());
+				if(u != v)
+				{
+					Maze.push_back(edge);
+					DisjointSet::Union(u, v);
+				}
+			}
+			return Maze;
+		}
+
 		void PrimMST()
 		{
 			using std::swap;
@@ -617,6 +659,47 @@ namespace CTL
 			}
 		}
 
+		EdgeList PrimMaze()
+		{
+			using std::swap;
+			for(auto v : this->graph)
+			{
+				v->state = VertexState::White; //Eliminates linear cost of lookup in array or extra space for lookup in set
+			}
+			EdgeList Maze;
+			GraphType Frontier;
+			EdgeList Possible;
+			Frontier.reserve(size_t(std::sqrt(this->graph.size())));
+			this->graph.front()->state = VertexState::Black;
+			for(auto p : this->graph.front()->Adjacent())
+			{
+				Frontier.push_back(p.getTo());
+			}
+			while(!Frontier.empty())
+			{
+				std::swap(Frontier.back(),Frontier[std::rand()%Frontier.size()]);
+				Vertex* v = Frontier.back(), *u = nullptr;
+				Frontier.pop_back();
+				v->state = VertexState::Black;
+				for(auto partial : v->Adjacent())
+				{
+					u = partial.getTo();
+					if(u->state == VertexState::White)
+					{
+						Frontier.push_back(u);
+						u->state = VertexState::Gray;
+					}
+					if(u->state == VertexState::Black)
+					{
+						Possible.push_back(Edge<T>(v,u,partial.getWeight()));
+					}
+				}
+				Maze.push_back(Possible[std::rand()%Possible.size()]);
+				Possible.clear();
+			}
+			return Maze;
+		}
+
 		EdgeList PrimMSTE(double& total)
 		{
 			EdgeList mst;
@@ -635,7 +718,7 @@ namespace CTL
 
 		bool ConnectedComponentTest(EdgeList& edges)
 		{
-			static_assert(std::is_same<Direction, Undirected<T>>::value, "Cannot use ConnectedComponent on directed graph!");
+			static_assert(Policy::directed, "Cannot use ConnectedComponent on directed graph!");
 			for(Vertex* e : this->graph)
 			{
 				e->state = VertexState::White;
@@ -692,7 +775,6 @@ namespace CTL
  			{
  				for(Edge<T> e : Edges)
  				{
- 					//Relax(e.f,e.s,W);
 					Vertex* v = e.getFrom(), *u = e.getTo();
 					if (u->distance > v->distance + e.getWeight())
 					{
@@ -712,13 +794,17 @@ namespace CTL
 		void Dijkstra(Vertex* begin)
  		{
  			this->initialize(begin);
-			auto cmp = [](const Vertex* lhs, const Vertex* rhs)->bool {return lhs->distance > rhs->distance; };
-			auto b = this->graph.begin(), e = this->graph.end();
-			Heap::BuildHeap(b, e, cmp);
- 			while(b!=e)
+			Vertex* u = nullptr, *v = nullptr;
+			auto cmp = [](const QueueEntry lhs, const QueueEntry rhs)->bool {return lhs.key > rhs.key; };
+			HeapQueue<QueueEntry, EntryList, decltype(cmp)> queue(cmp);
+			queue.push(QueueEntry(begin, 0));
+ 			while(!queue.empty())
  			{
-				auto v = *b;
-				Heap::PopHeap(b, e--, cmp);
+				auto ve = queue.top();
+				v = ve.value;
+				queue.pop();
+				if(v->state == VertexState::Black) continue;//Already removed from queue;
+				v->state = VertexState::Black;
 				for (auto partial : v->Adjacent())
 				{
 					auto u = partial.getTo();
@@ -726,13 +812,90 @@ namespace CTL
 					{
 						u->distance = v->distance + partial.getWeight();
 						u->parent = v;
-						auto changed = std::find(b, e, u);
-						Heap::SiftUp(b, (changed!=e?changed:b) , cmp);
+						queue.push(QueueEntry(u, u->distance));
 					}
 				}
  			}
  		}
 		
+		void Dijkstra(Vertex* begin,Vertex* end)
+		{
+			for(Vertex* v : this->graph)
+			{
+				v->distance = std::numeric_limits<double>::infinity();
+				v->estimate = std::numeric_limits<double>::infinity();
+				v->parent = nullptr;
+				v->state = VertexState::White;
+			}
+			begin->distance = 0;
+			Vertex* u = nullptr, *v = nullptr;
+			auto cmp = [](const QueueEntry lhs, const QueueEntry rhs)->bool {return lhs.key > rhs.key; };
+			HeapQueue<QueueEntry, EntryList, decltype(cmp)> queue(cmp);
+			queue.push(QueueEntry(begin, 0));
+			while(!queue.empty())
+			{
+				auto ve = queue.top();
+				v = ve.value;
+				if(v == end) return;
+				queue.pop();
+				if(v->state == VertexState::Black) continue;//Already removed from queue;
+				v->state = VertexState::Black; //Tells that vertex is removed from queuel
+				for(auto partial : v->Adjacent())
+				{
+					u = partial.getTo();
+					if(u->state != VertexState::Black && u->distance > v->distance + partial.getWeight())
+					{
+						u->distance = v->distance + partial.getWeight();
+						u->parent = v;
+						queue.push(QueueEntry(u,u->distance));
+					}
+				}
+			}
+		}
+
+		template<typename Heuristic>
+		void AStar(Vertex* begin, Vertex* end, Heuristic H)
+		{
+			for(Vertex* v: this->graph)
+			{
+				v->distance = std::numeric_limits<double>::infinity();
+				v->estimate = std::numeric_limits<double>::infinity();
+				v->parent = nullptr;
+				v->state = VertexState::White;
+			}
+			begin->distance = 0;
+			begin->estimate = H(begin, end);
+			auto cmp = [](const QueueEntry lhs, const QueueEntry rhs)->bool {return lhs.key > rhs.key; };
+			HeapQueue<QueueEntry, EntryList, decltype(cmp)> queue(cmp);
+			queue.push(QueueEntry(begin, begin->estimate));
+			Vertex *u = nullptr, *v = nullptr;
+			double score = 0;
+			while(!queue.empty())
+			{
+				auto ve = queue.top();
+				v = ve.value;
+				if(v == end) return;
+				queue.pop();
+				v->state = VertexState::Black;
+				for(auto partial : v->Adjacent())
+				{
+					u = partial.getTo();
+					if(u->state == VertexState::Black) continue;
+					score = v->distance + partial.getWeight();
+					if(u->state == VertexState::White)
+					{
+						u->state = VertexState::Gray;
+					//	queue.push(u);
+					}
+					else if(score >= u->distance) continue;
+					u->parent = v;
+					u->distance = score;
+					u->estimate = score + H(u, end);
+					queue.push(QueueEntry(u, u->estimate));
+				}
+			}
+		}
+
 		double** FloydWarshall()
 		{
 			std::unordered_map<Vertex*, unsigned int> index;

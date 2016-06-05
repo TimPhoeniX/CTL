@@ -25,6 +25,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_proto_hashmap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_stack.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Container\ctl_virtual_disjointset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\PriorityQueue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_pair.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ctl_tester.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graph\Graph.hpp" />

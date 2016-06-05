@@ -74,5 +74,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\PrintHeap.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Container\PriorityQueue.hpp">
+      <Filter>Container</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ namespace CTL
 
 	private:
 		size_type cSize = 0;
-		size_type cMaxSize = 1024;
+		size_type cMaxSize = 4;
 		pointer storage = nullptr;
 
 		void MoveBack(size_type begin)
@@ -170,6 +170,22 @@ namespace CTL
 			this->cMaxSize = newSize;
 		}
 
+		void shrink_to_fit()
+		{
+			if(this-> cSize == this->cMaxSize) return;
+			pointer to = Alloc::allocate(*this, this->cSize);
+			pointer newStorage = to;
+			pointer oldStorage = this->storage;
+			for(size_type i = 0; i < this->cSize; ++i)
+			{
+				Alloc::construct(*this, newStorage++, std::move(*oldStorage));
+				Alloc::destroy(*this, oldStorage++);
+			}
+			Alloc::deallocate(*this, this->storage, this->cMaxSize);
+			this->storage = to;
+			this->cMaxSize = this->cSize;
+		}
+
 		size_type size() const
 		{
 			return this->cSize;
@@ -183,6 +199,11 @@ namespace CTL
 		value_type& back()
 		{
 			return this->storage[this->cSize - 1];
+		}
+
+		value_type& front()
+		{
+			return *this->storage;
 		}
 
 		void push_front(const value_type& e)
